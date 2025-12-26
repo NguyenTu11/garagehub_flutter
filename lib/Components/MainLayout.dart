@@ -25,14 +25,14 @@ class _MainLayoutState extends State<MainLayout> {
         backgroundColor: Colors.white,
         body: Column(
           children: [
-            Header(), // header cố định trên đầu
-            Expanded(child: widget.child), // nội dung chính
+            Header(),
+            Expanded(child: widget.child),
           ],
         ),
         bottomNavigationBar: Navbar(
           currentIndex: widget.currentIndex,
           onTap: widget.onTab,
-        ), // navbar cố định dưới cùng
+        ),
       ),
     );
   }

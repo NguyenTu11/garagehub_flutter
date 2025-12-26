@@ -20,22 +20,61 @@ class _NavbarState extends State<Navbar> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: widget.currentIndex,
-      onTap: widget.onTap,
-      selectedFontSize: 14,
-      unselectedFontSize: 0,
-      showSelectedLabels: true,
-      showUnselectedLabels: false,
-      items: items.asMap().entries.map((entry) {
-        int idx = entry.key;
-        _NavItem item = entry.value;
-        return BottomNavigationBarItem(
-          icon: Icon(item.icon),
-          label: widget.currentIndex == idx ? item.label : '',
-        );
-      }).toList(),
+    Color selectedColor = Colors.blue.shade600;
+    Color unselectedColor = Colors.blue.shade200;
+    Color bgColor = Colors.white;
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade50.withOpacity(0.18),
+            blurRadius: 8,
+            offset: Offset(0, -3),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        currentIndex: widget.currentIndex,
+        onTap: widget.onTap,
+        selectedFontSize: 13,
+        unselectedFontSize: 0,
+        showSelectedLabels: true,
+        showUnselectedLabels: false,
+        items: items.asMap().entries.map((entry) {
+          int idx = entry.key;
+          _NavItem item = entry.value;
+          bool selected = widget.currentIndex == idx;
+          return BottomNavigationBarItem(
+            icon: AnimatedContainer(
+              duration: Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.symmetric(
+                horizontal: selected ? 10 : 0,
+                vertical: selected ? 4 : 0,
+              ),
+              decoration: selected
+                  ? BoxDecoration(
+                      color: selectedColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  : null,
+              child: Icon(
+                item.icon,
+                color: selected ? selectedColor : unselectedColor,
+                size: selected ? 28 : 22,
+              ),
+            ),
+            label: selected ? item.label : '',
+          );
+        }).toList(),
+        selectedItemColor: selectedColor,
+        unselectedItemColor: unselectedColor,
+      ),
     );
   }
 }

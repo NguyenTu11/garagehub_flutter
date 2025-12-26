@@ -8,14 +8,15 @@ import 'Screens/auth/ForgotPasswordScreen.dart';
 import 'Screens/auth/VerifyPasswordScreen.dart';
 import 'Screens/auth/ChangePasswordScreen.dart';
 import 'Screens/SplashScreen.dart';
-import 'Screens/HomePage.dart';
+import 'Screens/home/HomePage.dart';
+import 'Screens/home/SearchScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    // .env file not found, fallback to defaults if needed
+    print("Error loading .env file: $e");
   }
   runApp(MyApp());
 }
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         '/verify-password': (context) => VerifyPasswordScreen(),
         '/change-password': (context) => ChangePasswordScreen(),
         '/home': (context) => HomePage(),
+        '/search': (context) => const SearchScreen(),
       },
     );
   }
