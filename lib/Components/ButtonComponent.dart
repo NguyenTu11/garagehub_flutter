@@ -26,8 +26,7 @@ class _ButtonComponentState extends State<ButtonComponent> {
 
   @override
   Widget build(BuildContext context) {
-    final Color mainBlue =
-        widget.backgroundColor ?? Color(0xFF1976D2); // Blue 700
+    final Color mainBlue = widget.backgroundColor ?? Color(0xFF1976D2);
     final Color txtColor = widget.textColor ?? Colors.white;
 
     return AnimatedScale(

@@ -28,17 +28,27 @@ class OrderRepository extends BaseResponse {
 
   Future<ApiResponse<OrderModel>> getOrdersByUser() async {
     var response = await http.get(
-      Uri.parse('${Utils.baseUrl}${Utils.orderGetByUser}'),
+      Uri.parse('${Utils.baseUrl}${Utils.orderGetByUser}/${Utils.userId}'),
       headers: {'Authorization': 'Bearer ${Utils.token}'},
     );
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      final apiResponse = ApiResponse<OrderModel>.fromJson(
-        jsonData,
-        (e) => OrderModel.fromJson(e),
+
+      List<OrderModel> orders = [];
+      if (jsonData is List) {
+        orders = jsonData.map((e) => OrderModel.fromJson(e)).toList();
+      } else if (jsonData is Map && jsonData['data'] != null) {
+        orders = (jsonData['data'] as List)
+            .map((e) => OrderModel.fromJson(e))
+            .toList();
+      }
+
+      return ApiResponse<OrderModel>(
+        status: true,
+        message: "Success",
+        data: orders,
       );
-      return apiResponse;
     }
     super.ErrorHandle(response.statusCode);
     return ApiResponse<OrderModel>(status: false, message: "", data: []);
@@ -94,4 +104,3 @@ class OrderRepository extends BaseResponse {
     throw Exception('Failed to update order');
   }
 }
-

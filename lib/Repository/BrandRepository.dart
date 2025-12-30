@@ -15,11 +15,21 @@ class BrandRepository extends BaseResponse {
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      final apiResponse = ApiResponse<BrandModel>.fromJson(
-        jsonData,
-        (e) => BrandModel.fromJson(e),
+
+      List<BrandModel> brands = [];
+      if (jsonData is List) {
+        brands = jsonData.map((e) => BrandModel.fromJson(e)).toList();
+      } else if (jsonData is Map && jsonData['data'] != null) {
+        final data = jsonData['data'];
+        if (data is List) {
+          brands = data.map((e) => BrandModel.fromJson(e)).toList();
+        }
+      }
+      return ApiResponse<BrandModel>(
+        status: true,
+        message: "Success",
+        data: brands,
       );
-      return apiResponse;
     }
     super.ErrorHandle(response.statusCode);
     return ApiResponse<BrandModel>(status: false, message: "", data: []);
@@ -61,7 +71,10 @@ class BrandRepository extends BaseResponse {
   }
 
   Future<BrandModel> updateBrand(
-      String id, BrandModel brand, String? imagePath) async {
+    String id,
+    BrandModel brand,
+    String? imagePath,
+  ) async {
     var request = http.MultipartRequest(
       'PUT',
       Uri.parse('${Utils.baseUrl}${Utils.brandUpdate}/$id'),
@@ -96,4 +109,3 @@ class BrandRepository extends BaseResponse {
     throw Exception('Failed to delete brand');
   }
 }
-

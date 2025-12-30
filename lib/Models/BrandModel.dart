@@ -3,11 +3,7 @@ class BrandModel {
   String name;
   String image;
 
-  BrandModel({
-    this.id,
-    required this.name,
-    this.image = '',
-  });
+  BrandModel({this.id, required this.name, this.image = ''});
 
   factory BrandModel.fromJson(Map<String, dynamic> json) {
     return BrandModel(
@@ -18,10 +14,6 @@ class BrandModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'image': image,
-    };
+    return {'name': name, 'image': image};
   }
 }
-

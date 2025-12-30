@@ -22,7 +22,10 @@ class BrandService {
   }
 
   Future<BrandModel> updateBrand(
-      String id, BrandModel brand, String? imagePath) async {
+    String id,
+    BrandModel brand,
+    String? imagePath,
+  ) async {
     return await brandRepository.updateBrand(id, brand, imagePath);
   }
 
@@ -30,4 +33,3 @@ class BrandService {
     return await brandRepository.deleteBrand(id);
   }
 }
-

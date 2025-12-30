@@ -89,4 +89,3 @@ class MotoRepository extends BaseResponse {
     throw Exception('Failed to delete moto');
   }
 }
-

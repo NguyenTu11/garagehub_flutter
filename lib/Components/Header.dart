@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
+import '../Services/CartService.dart';
+import '../Services/MessageNotifier.dart';
 
-class Header extends StatelessWidget {
+class Header extends StatefulWidget {
   final double logoSize;
   const Header({Key? key, this.logoSize = 55}) : super(key: key);
+
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  @override
+  void initState() {
+    super.initState();
+    CartNotifier.refresh();
+    MessageNotifier.refresh();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +44,12 @@ class Header extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
                   'Assets/Images/logo_garagehub.png',
-                  width: logoSize,
-                  height: logoSize,
+                  width: widget.logoSize,
+                  height: widget.logoSize,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Icon(
                     Icons.image,
-                    size: logoSize * 0.7,
+                    size: widget.logoSize * 0.7,
                     color: Colors.blue.shade200,
                   ),
                 ),
@@ -84,24 +98,98 @@ class Header extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.shopping_cart_rounded,
-                      color: Colors.orange.shade400,
-                      size: 24,
-                    ),
-                    onPressed: () {},
-                    tooltip: 'Giỏ hàng',
+                  ValueListenableBuilder<int>(
+                    valueListenable: CartNotifier.cartCount,
+                    builder: (context, count, child) {
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.shopping_cart_rounded,
+                              color: Colors.orange.shade400,
+                              size: 24,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/cart');
+                            },
+                            tooltip: 'Giỏ hàng',
+                          ),
+                          if (count > 0)
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Text(
+                                  count > 99 ? '99+' : count.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                   SizedBox(width: 2),
-                  IconButton(
-                    icon: Icon(
-                      Icons.mark_chat_unread_rounded,
-                      color: Colors.blue.shade600,
-                      size: 24,
-                    ),
-                    onPressed: () {},
-                    tooltip: 'Tin nhắn',
+                  ValueListenableBuilder<int>(
+                    valueListenable: MessageNotifier.unreadCount,
+                    builder: (context, count, child) {
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.mark_chat_unread_rounded,
+                              color: Colors.blue.shade600,
+                              size: 24,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/chat');
+                            },
+                            tooltip: 'Tin nhắn',
+                          ),
+                          if (count > 0)
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Text(
+                                  count > 99 ? '99+' : count.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

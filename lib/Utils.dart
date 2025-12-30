@@ -4,19 +4,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Utils {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   static String userName = "";
+  static String userEmail = "";
   static String userId = "";
   static String token = "";
   static int selectIndex = 0;
-  
+
   // Đọc baseUrl từ .env file
   // Fallback về giá trị mặc định nếu không tìm thấy trong .env
   static String get baseUrl {
     return dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8000/api/v1';
   }
-  
+
   // Backend base URL (không có /api/v1) - dùng cho images
   static String get backendBaseUrl {
     return dotenv.env['BACKEND_BASE_URL'] ?? 'http://10.0.2.2:8000';
+  }
+
+  // Cloudinary cloud name
+  static String get cloudinaryCloudName {
+    return dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? 'nguyentu11';
   }
 
   // Auth endpoints
@@ -75,15 +81,17 @@ class Utils {
   // Gemini endpoints
   static String geminiAsk = '/gemini/ask';
 
+  /// Chuyển đổi image path (public_id hoặc URL) thành Cloudinary URL
   static String getBackendImgURL(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
       return '';
     }
+    // Nếu đã là URL đầy đủ, trả về luôn
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    // Sử dụng backendBaseUrl từ .env
-    return '$backendBaseUrl$imagePath';
+    // Tạo Cloudinary URL từ public_id
+    // Format: https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}
+    return 'https://res.cloudinary.com/$cloudinaryCloudName/image/upload/$imagePath';
   }
 }
-

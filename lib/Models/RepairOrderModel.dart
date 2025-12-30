@@ -10,7 +10,7 @@ class RepairOrderModel {
   UserModel? employee;
   List<OrderItemModel> items;
   double totalAmount;
-  String status; // Pending, Processing, Completed, Cancelled
+  String status;
   String? paymentMethod;
   String? notes;
   double repairCosts;
@@ -52,8 +52,8 @@ class RepairOrderModel {
           : null,
       items: json['items'] != null
           ? (json['items'] as List)
-              .map((e) => OrderItemModel.fromJson(e))
-              .toList()
+                .map((e) => OrderItemModel.fromJson(e))
+                .toList()
           : [],
       totalAmount: json['totalAmount'] == null
           ? 0.0
@@ -84,4 +84,3 @@ class RepairOrderModel {
     };
   }
 }
-

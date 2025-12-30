@@ -16,13 +16,26 @@ class OrderItemModel {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
-    return OrderItemModel(
-      partId: json['partId'] is String
-          ? json['partId']
-          : json['partId']?['_id'] ?? json['partId']?['id'],
-      name: json['name'],
-      price: json['price'] == null
+    final partData = json['partId'];
+    String? partId;
+    String? name;
+    double? price;
+
+    if (partData is String) {
+      partId = partData;
+    } else if (partData is Map) {
+      partId = partData['_id'] ?? partData['id'];
+      name = partData['name'];
+      price = partData['price'] == null
           ? null
+          : double.parse(partData['price'].toString());
+    }
+
+    return OrderItemModel(
+      partId: partId,
+      name: json['name'] ?? name,
+      price: json['price'] == null
+          ? price
           : double.parse(json['price'].toString()),
       quantity: json['quantity'] ?? 0,
       image: json['image'],
@@ -33,10 +46,6 @@ class OrderItemModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'partId': partId,
-      'quantity': quantity,
-    };
+    return {'partId': partId, 'quantity': quantity};
   }
 }
-

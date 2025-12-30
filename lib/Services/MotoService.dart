@@ -29,4 +29,3 @@ class MotoService {
     return await motoRepository.deleteMoto(licensePlate);
   }
 }
-

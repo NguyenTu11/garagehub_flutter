@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../Utils.dart';
 import '../../Services/AuthService.dart';
+import '../../Services/CartService.dart';
+import '../../Services/MessageNotifier.dart';
+import '../../Services/MessageSocket.dart';
 import '../../Components/ButtonComponent.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -62,6 +65,11 @@ class _LoginScreen extends State<LoginScreen> {
         Utils.userId =
             result['user']?['userId'] ?? result['user']?['_id'] ?? '';
         Utils.userName = result['user']?['fullName'] ?? '';
+        Utils.userEmail = result['user']?['email'] ?? txtEmail.text;
+        CartNotifier.refresh();
+        MessageNotifier.refresh();
+        MessageSocket.connect();
+
         _showMessage(success: result['message'] ?? "Đăng nhập thành công!");
         Future.delayed(Duration(seconds: 1), () {
           Navigator.pushReplacementNamed(context, '/home');

@@ -15,7 +15,6 @@ class _SearchScreenState extends State<SearchScreen> {
   void _onSearch(String query) {
     setState(() {
       _isSearching = true;
-      // Fake search logic, replace with real API
       _results = query.isEmpty
           ? []
           : List.generate(5, (i) => 'Kết quả cho "$query" #${i + 1}');
@@ -27,7 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final double cardRadius = 28;
     final Color mainBlue = Colors.blue.shade700;
-    final Color headerBlue = Colors.blue.shade100; // Light blue
+    final Color headerBlue = Colors.blue.shade100;
     final Color lightBlue = Colors.blue.shade50;
     final Color accentBlue = Colors.blue.shade400;
     final Color shadowBlue = Colors.blue.shade100.withOpacity(0.18);

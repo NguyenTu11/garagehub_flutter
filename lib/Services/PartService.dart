@@ -22,7 +22,10 @@ class PartService {
   }
 
   Future<PartModel> updatePart(
-      String id, PartModel part, String? imagePath) async {
+    String id,
+    PartModel part,
+    String? imagePath,
+  ) async {
     return await partRepository.updatePart(id, part, imagePath);
   }
 
@@ -30,4 +33,3 @@ class PartService {
     return await partRepository.deletePart(id);
   }
 }
-

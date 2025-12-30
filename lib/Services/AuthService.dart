@@ -29,13 +29,16 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> resetPassword(
-      String resetToken, String newPassword) async {
+    String resetToken,
+    String newPassword,
+  ) async {
     return await authRepository.resetPassword(resetToken, newPassword);
   }
 
   Future<Map<String, dynamic>> changePassword(
-      String oldPassword, String newPassword) async {
+    String oldPassword,
+    String newPassword,
+  ) async {
     return await authRepository.changePassword(oldPassword, newPassword);
   }
 }
-

@@ -18,6 +18,21 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
+  void _handleNavigation(int index) {
+    widget.onTab(index);
+
+    final routes = [
+      '/home',
+      '/brands',
+      '/parts',
+      '/order-history',
+      '/book-appointment',
+    ];
+    if (index < routes.length && index != widget.currentIndex) {
+      Navigator.pushReplacementNamed(context, routes[index]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -31,7 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
         ),
         bottomNavigationBar: Navbar(
           currentIndex: widget.currentIndex,
-          onTap: widget.onTab,
+          onTap: _handleNavigation,
         ),
       ),
     );

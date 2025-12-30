@@ -28,7 +28,7 @@ class ServiceCards extends StatelessWidget {
       ),
     ];
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       child: Row(
         children: List.generate(services.length, (i) {
           return Expanded(

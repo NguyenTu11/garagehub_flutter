@@ -12,10 +12,11 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   final List<_NavItem> items = [
-    _NavItem(icon: Icons.home, label: 'Home'),
-    _NavItem(icon: Icons.build, label: 'Parts'),
-    _NavItem(icon: Icons.motorcycle, label: 'Motos'),
-    _NavItem(icon: Icons.handyman, label: 'Repaird'),
+    _NavItem(icon: Icons.home, label: 'Trang chủ'),
+    _NavItem(icon: Icons.business, label: 'Thương hiệu'),
+    _NavItem(icon: Icons.build, label: 'Phụ tùng'),
+    _NavItem(icon: Icons.history, label: 'Lịch sử'),
+    _NavItem(icon: Icons.calendar_today, label: 'Đặt lịch'),
   ];
 
   @override

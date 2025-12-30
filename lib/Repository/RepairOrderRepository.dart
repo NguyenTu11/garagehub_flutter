@@ -59,7 +59,9 @@ class RepairOrderRepository extends BaseResponse {
   }
 
   Future<RepairOrderModel> updateRepairOrder(
-      String id, RepairOrderModel order) async {
+    String id,
+    RepairOrderModel order,
+  ) async {
     var response = await http.put(
       Uri.parse('${Utils.baseUrl}${Utils.repairOrderUpdate}/$id'),
       headers: {
@@ -90,4 +92,3 @@ class RepairOrderRepository extends BaseResponse {
     throw Exception('Failed to delete repair order');
   }
 }
-

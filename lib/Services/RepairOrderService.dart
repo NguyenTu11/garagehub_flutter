@@ -22,7 +22,9 @@ class RepairOrderService {
   }
 
   Future<RepairOrderModel> updateRepairOrder(
-      String id, RepairOrderModel order) async {
+    String id,
+    RepairOrderModel order,
+  ) async {
     return await repairOrderRepository.updateRepairOrder(id, order);
   }
 
@@ -30,4 +32,3 @@ class RepairOrderService {
     return await repairOrderRepository.deleteRepairOrder(id);
   }
 }
-

@@ -95,16 +95,16 @@ class AuthRepository extends BaseResponse {
   }
 
   Future<Map<String, dynamic>> resetPassword(
-      String resetToken, String newPassword) async {
+    String resetToken,
+    String newPassword,
+  ) async {
     var response = await http.post(
       Uri.parse('${Utils.baseUrl}${Utils.authResetPassword}'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $resetToken',
       },
-      body: json.encode({
-        'newPassword': newPassword,
-      }),
+      body: json.encode({'newPassword': newPassword}),
     );
 
     if (response.statusCode == 200) {
@@ -122,7 +122,9 @@ class AuthRepository extends BaseResponse {
   }
 
   Future<Map<String, dynamic>> changePassword(
-      String oldPassword, String newPassword) async {
+    String oldPassword,
+    String newPassword,
+  ) async {
     var response = await http.post(
       Uri.parse('${Utils.baseUrl}${Utils.authChangePassword}'),
       headers: {
@@ -143,4 +145,3 @@ class AuthRepository extends BaseResponse {
     throw Exception('Change password failed');
   }
 }
-

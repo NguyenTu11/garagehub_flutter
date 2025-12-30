@@ -15,11 +15,21 @@ class PartRepository extends BaseResponse {
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      final apiResponse = ApiResponse<PartModel>.fromJson(
-        jsonData,
-        (e) => PartModel.fromJson(e),
+
+      List<PartModel> parts = [];
+      if (jsonData is List) {
+        parts = jsonData.map((e) => PartModel.fromJson(e)).toList();
+      } else if (jsonData is Map && jsonData['data'] != null) {
+        final data = jsonData['data'];
+        if (data is List) {
+          parts = data.map((e) => PartModel.fromJson(e)).toList();
+        }
+      }
+      return ApiResponse<PartModel>(
+        status: true,
+        message: "Success",
+        data: parts,
       );
-      return apiResponse;
     }
     super.ErrorHandle(response.statusCode);
     return ApiResponse<PartModel>(status: false, message: "", data: []);
@@ -68,7 +78,10 @@ class PartRepository extends BaseResponse {
   }
 
   Future<PartModel> updatePart(
-      String id, PartModel part, String? imagePath) async {
+    String id,
+    PartModel part,
+    String? imagePath,
+  ) async {
     var request = http.MultipartRequest(
       'PUT',
       Uri.parse('${Utils.baseUrl}${Utils.partUpdate}/$id'),
@@ -110,4 +123,3 @@ class PartRepository extends BaseResponse {
     throw Exception('Failed to delete part');
   }
 }
-

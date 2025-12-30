@@ -8,7 +8,7 @@ class OrderModel {
   UserModel? user;
   List<OrderItemModel> items;
   double totalAmount;
-  String status; // Pending, Processing, Completed, Cancelled
+  String status;
   ShippingAddress? shippingAddress;
   String? paymentMethod;
   String? notes;
@@ -40,8 +40,8 @@ class OrderModel {
       user: json['userId'] is Map ? UserModel.fromJson(json['userId']) : null,
       items: json['items'] != null
           ? (json['items'] as List)
-              .map((e) => OrderItemModel.fromJson(e))
-              .toList()
+                .map((e) => OrderItemModel.fromJson(e))
+                .toList()
           : [],
       totalAmount: json['totalAmount'] == null
           ? 0.0
@@ -77,12 +77,7 @@ class ShippingAddress {
   String? state;
   String? zipCode;
 
-  ShippingAddress({
-    this.street,
-    this.city,
-    this.state,
-    this.zipCode,
-  });
+  ShippingAddress({this.street, this.city, this.state, this.zipCode});
 
   factory ShippingAddress.fromJson(Map<String, dynamic> json) {
     return ShippingAddress(
@@ -94,12 +89,6 @@ class ShippingAddress {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'street': street,
-      'city': city,
-      'state': state,
-      'zipCode': zipCode,
-    };
+    return {'street': street, 'city': city, 'state': state, 'zipCode': zipCode};
   }
 }
-
