@@ -113,9 +113,9 @@ class _HeaderState extends State<Header> {
                         children: [
                           IconButton(
                             icon: Icon(
-                              Icons.shopping_cart_rounded,
-                              color: Colors.orange.shade400,
-                              size: 24,
+                              Icons.local_mall_rounded,
+                              color: const Color.fromARGB(255, 99, 222, 210),
+                              size: 26,
                             ),
                             onPressed: () {
                               Navigator.of(context).pushNamed('/cart');
@@ -129,7 +129,7 @@ class _HeaderState extends State<Header> {
                               child: Container(
                                 padding: EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.red,
+                                  color: Colors.orange.shade300,
                                   shape: BoxShape.circle,
                                 ),
                                 constraints: BoxConstraints(
@@ -160,9 +160,9 @@ class _HeaderState extends State<Header> {
                         children: [
                           IconButton(
                             icon: Icon(
-                              Icons.mark_chat_unread_rounded,
-                              color: Colors.blue.shade600,
-                              size: 24,
+                              Icons.forum_rounded,
+                              color: Colors.indigo.shade300,
+                              size: 26,
                             ),
                             onPressed: () {
                               Navigator.of(context).pushNamed('/chat');
@@ -176,7 +176,7 @@ class _HeaderState extends State<Header> {
                               child: Container(
                                 padding: EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.red,
+                                  color: Colors.pink.shade300,
                                   shape: BoxShape.circle,
                                 ),
                                 constraints: BoxConstraints(
