@@ -1,8 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../Utils.dart';
+import '../../Services/ChatService.dart';
 import '../../Services/GeminiService.dart';
 import '../../Services/MessageNotifier.dart';
 import '../../Services/MessageSocket.dart';
@@ -256,11 +261,15 @@ class _AdminChatTab extends StatefulWidget {
 class _AdminChatTabState extends State<_AdminChatTab> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
+  final ChatService _chatService = ChatService();
 
   List<_ChatMessage> _messages = [];
+  List<String> _selectedImages = [];
   bool _isLoading = true;
   bool _isSending = false;
   bool _isTyping = false;
+  bool _isUploading = false;
 
   IO.Socket? _socket;
 
@@ -337,6 +346,7 @@ class _AdminChatTabState extends State<_AdminChatTab> {
                 senderRole: msg.senderRole,
                 createdAt: msg.createdAt,
                 isRead: true,
+                attachments: msg.attachments,
               );
             }
             return msg;
@@ -386,17 +396,120 @@ class _AdminChatTabState extends State<_AdminChatTab> {
     });
   }
 
-  void _sendMessage() {
+  Future<void> _pickImages() async {
+    try {
+      // Request photo library permission
+      PermissionStatus status;
+      if (Platform.isAndroid) {
+        status = await Permission.photos.request();
+        if (status.isDenied) {
+          status = await Permission.storage.request();
+        }
+      } else {
+        status = await Permission.photos.request();
+      }
+
+      if (status.isPermanentlyDenied) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cần quyền truy cập'),
+              content: const Text(
+                'Vui lòng cấp quyền truy cập thư viện ảnh trong cài đặt để chọn ảnh.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    openAppSettings();
+                  },
+                  child: const Text('Mở cài đặt'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      if (!status.isGranted && !status.isLimited) {
+        return;
+      }
+
+      final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+      if (pickedFiles.isNotEmpty) {
+        setState(() {
+          _selectedImages.addAll(pickedFiles.map((f) => f.path));
+          if (_selectedImages.length > 5) {
+            _selectedImages = _selectedImages.sublist(0, 5);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Chỉ được chọn tối đa 5 ảnh'),
+                backgroundColor: Colors.orange.shade400,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking images: $e');
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
+  Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty || _socket == null) return;
+    if ((text.isEmpty && _selectedImages.isEmpty) || _socket == null) return;
 
     _messageController.clear();
-    setState(() => _isSending = true);
+    final imagesToSend = List<String>.from(_selectedImages);
+    setState(() {
+      _isSending = true;
+      _selectedImages.clear();
+    });
+
+    List<String> uploadedUrls = [];
+    if (imagesToSend.isNotEmpty) {
+      setState(() => _isUploading = true);
+      uploadedUrls = await _chatService.uploadImages(imagesToSend);
+      setState(() => _isUploading = false);
+
+      if (uploadedUrls.isEmpty && imagesToSend.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Upload ảnh thất bại'),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        setState(() => _isSending = false);
+        return;
+      }
+    }
+
+    final messageText = text.isEmpty && uploadedUrls.isNotEmpty
+        ? '📷 Đã gửi ảnh'
+        : text;
 
     _socket!.emit('send-message', {
       'conversationId': _conversationId,
-      'message': text,
-      'attachments': [],
+      'message': messageText,
+      'attachments': uploadedUrls,
     });
 
     _socket!.emit('typing', {
@@ -448,6 +561,7 @@ class _AdminChatTabState extends State<_AdminChatTab> {
                         time: _formatTime(msg.createdAt),
                         isRead: msg.isRead,
                         color: Colors.blue,
+                        attachments: msg.attachments,
                       );
                     },
                   ),
@@ -581,64 +695,176 @@ class _AdminChatTabState extends State<_AdminChatTab> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextField(
-                controller: _messageController,
-                onChanged: _onTyping,
-                style: TextStyle(color: accentColor.shade800),
-                decoration: InputDecoration(
-                  hintText: 'Nhập tin nhắn...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                ),
-                onSubmitted: (_) => _sendMessage(),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _isSending ? null : _sendMessage,
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [accentColor.shade500, accentColor.shade700],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: accentColor.shade200.withOpacity(0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: _isSending
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: const AlwaysStoppedAnimation(Colors.white),
+          if (_selectedImages.isNotEmpty)
+            Container(
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _selectedImages.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      Container(
+                        width: 80,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                            image: FileImage(File(_selectedImages[index])),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    )
-                  : const Icon(
-                      Icons.send_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
+                      Positioned(
+                        top: 4,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: () => _removeImage(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
+          if (_isUploading)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 80,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: _isSending ? null : _pickImages,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.image_rounded,
+                    color: accentColor.shade600,
+                    size: 24,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    onChanged: _onTyping,
+                    style: TextStyle(color: accentColor.shade800),
+                    decoration: InputDecoration(
+                      hintText: 'Nhập tin nhắn...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: _isSending ? null : _sendMessage,
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [accentColor.shade500, accentColor.shade700],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.shade200.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: _isSending
+                      ? SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: const AlwaysStoppedAnimation(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -971,12 +1197,14 @@ class _ChatMessage {
   final String senderRole;
   final DateTime? createdAt;
   final bool isRead;
+  final List<String> attachments;
 
   _ChatMessage({
     required this.message,
     required this.senderRole,
     this.createdAt,
     this.isRead = false,
+    this.attachments = const [],
   });
 
   factory _ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -987,6 +1215,9 @@ class _ChatMessage {
           ? DateTime.parse(json['createdAt'])
           : null,
       isRead: json['isRead'] ?? false,
+      attachments: json['attachments'] != null
+          ? List<String>.from(json['attachments'])
+          : [],
     );
   }
 }
@@ -1011,6 +1242,7 @@ class _MessageBubble extends StatelessWidget {
   final String time;
   final bool isRead;
   final Color color;
+  final List<String> attachments;
 
   const _MessageBubble({
     required this.message,
@@ -1018,84 +1250,194 @@ class _MessageBubble extends StatelessWidget {
     required this.time,
     required this.color,
     this.isRead = false,
+    this.attachments = const [],
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasText = message.isNotEmpty && message != '📷 Đã gửi ảnh';
+    final hasImages = attachments.isNotEmpty;
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
-        decoration: BoxDecoration(
-          gradient: isUser
-              ? LinearGradient(
-                  colors: [
-                    color == Colors.purple
-                        ? Colors.purple.shade500
-                        : Colors.blue.shade500,
-                    color == Colors.purple
-                        ? Colors.purple.shade700
-                        : Colors.blue.shade700,
-                  ],
-                )
-              : null,
-          color: isUser ? null : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isUser ? 20 : 6),
-            bottomRight: Radius.circular(isUser ? 6 : 20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isUser
-                  ? (color == Colors.purple
-                            ? Colors.purple.shade200
-                            : Colors.blue.shade200)
-                        .withOpacity(0.4)
-                  : Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: isUser
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
-            Text(
-              message,
-              style: TextStyle(
-                color: isUser ? Colors.white : Colors.grey.shade800,
-                fontSize: 14,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  time,
-                  style: TextStyle(
-                    color: isUser
-                        ? Colors.white.withOpacity(0.7)
-                        : Colors.grey.shade400,
-                    fontSize: 11,
+            if (hasImages)
+              ...attachments.map(
+                (url) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          backgroundColor: Colors.transparent,
+                          child: Stack(
+                            children: [
+                              InteractiveViewer(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(url),
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        url,
+                        width: 220,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            width: 220,
+                            height: 160,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(
+                                  color == Colors.purple
+                                      ? Colors.purple
+                                      : Colors.blue,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 220,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
-                if (isUser && isRead) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.done_all_rounded,
-                    size: 14,
-                    color: Colors.white.withOpacity(0.85),
+              ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: hasText ? 16 : 12,
+                vertical: hasText ? 12 : 8,
+              ),
+              decoration: BoxDecoration(
+                gradient: isUser
+                    ? LinearGradient(
+                        colors: [
+                          color == Colors.purple
+                              ? Colors.purple.shade500
+                              : Colors.blue.shade500,
+                          color == Colors.purple
+                              ? Colors.purple.shade700
+                              : Colors.blue.shade700,
+                        ],
+                      )
+                    : null,
+                color: isUser ? null : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isUser ? 20 : 6),
+                  bottomRight: Radius.circular(isUser ? 6 : 20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isUser
+                        ? (color == Colors.purple
+                                  ? Colors.purple.shade200
+                                  : Colors.blue.shade200)
+                              .withOpacity(0.4)
+                        : Colors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
-              ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (hasText)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        message,
+                        style: TextStyle(
+                          color: isUser ? Colors.white : Colors.grey.shade800,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        time,
+                        style: TextStyle(
+                          color: isUser
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.grey.shade400,
+                          fontSize: 11,
+                        ),
+                      ),
+                      if (isUser && isRead) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.done_all_rounded,
+                          size: 14,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1235,6 +1577,11 @@ extension _ColorShade on Color {
   }
 
   Color get shade500 => this;
+
+  Color get shade600 {
+    final hsl = HSLColor.fromColor(this);
+    return hsl.withLightness((hsl.lightness - 0.05).clamp(0.0, 1.0)).toColor();
+  }
 
   Color get shade700 {
     final hsl = HSLColor.fromColor(this);

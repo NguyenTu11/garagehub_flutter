@@ -159,7 +159,8 @@ class _AccessoriesState extends State<Accessories> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PartsScreen(),
+                          builder: (context) =>
+                              PartsScreen(initialSearchTerm: category['name']),
                         ),
                       );
                     },
