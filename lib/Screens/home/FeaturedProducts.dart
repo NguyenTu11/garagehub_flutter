@@ -96,6 +96,7 @@ class _FeaturedProductsState extends State<FeaturedProducts> {
         SnackBar(
           content: const Text('Sản phẩm đã hết hàng!'),
           backgroundColor: Colors.red.shade400,
+          duration: const Duration(seconds: 3),
         ),
       );
       return;
@@ -104,20 +105,18 @@ class _FeaturedProductsState extends State<FeaturedProducts> {
     await _cartService.addToCart(part);
 
     if (mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã thêm "${part.name}" vào giỏ hàng'),
+          content: Text(
+            'Đã thêm "${part.name}" vào giỏ hàng',
+            textAlign: TextAlign.center,
+          ),
           backgroundColor: Colors.green.shade400,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ),
-          action: SnackBarAction(
-            label: 'Xem giỏ',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.of(context).pushNamed('/cart');
-            },
           ),
         ),
       );
@@ -130,6 +129,7 @@ class _FeaturedProductsState extends State<FeaturedProducts> {
         SnackBar(
           content: const Text('Sản phẩm đã hết hàng!'),
           backgroundColor: Colors.red.shade400,
+          duration: const Duration(seconds: 3),
         ),
       );
       return;

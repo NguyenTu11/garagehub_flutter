@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../Models/PartModel.dart';
+import '../../Services/PartService.dart';
+import '../../Utils.dart';
+import '../parts/PartsScreen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -9,192 +13,787 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
-  List<String> _results = [];
+  final PartService _partService = PartService();
+  final FocusNode _focusNode = FocusNode();
+
+  List<PartModel> _allParts = [];
+  List<PartModel> _filteredParts = [];
+  List<String> _recentSearches = [];
+  bool _isLoading = true;
   bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchParts();
+    _focusNode.requestFocus();
+  }
+
+  Future<void> _fetchParts() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await _partService.getAllParts();
+      if (response.status) {
+        setState(() {
+          _allParts = response.data;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching parts: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   void _onSearch(String query) {
     setState(() {
-      _isSearching = true;
-      _results = query.isEmpty
-          ? []
-          : List.generate(5, (i) => 'Kết quả cho "$query" #${i + 1}');
-      _isSearching = false;
+      _isSearching = query.isNotEmpty;
+      if (query.isEmpty) {
+        _filteredParts = [];
+      } else {
+        _filteredParts = _allParts
+            .where(
+              (part) =>
+                  part.name.toLowerCase().contains(query.toLowerCase()) ||
+                  (part.brand?.name.toLowerCase().contains(
+                        query.toLowerCase(),
+                      ) ??
+                      false),
+            )
+            .take(10)
+            .toList();
+      }
     });
+  }
+
+  void _selectPart(PartModel part) {
+    // Add to recent searches
+    if (!_recentSearches.contains(part.name)) {
+      setState(() {
+        _recentSearches.insert(0, part.name);
+        if (_recentSearches.length > 5) {
+          _recentSearches = _recentSearches.sublist(0, 5);
+        }
+      });
+    }
+
+    // Navigate to PartsScreen with search term
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PartsScreen(initialSearchTerm: part.name),
+      ),
+    );
+  }
+
+  void _searchWithTerm(String term) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PartsScreen(initialSearchTerm: term),
+      ),
+    );
+  }
+
+  String _formatPrice(double price) {
+    return price
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    final double cardRadius = 28;
-    final Color mainBlue = Colors.blue.shade700;
-    final Color headerBlue = Colors.blue.shade100;
-    final Color lightBlue = Colors.blue.shade50;
-    final Color accentBlue = Colors.blue.shade400;
-    final Color shadowBlue = Colors.blue.shade100.withOpacity(0.18);
-
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: lightBlue,
-        appBar: AppBar(
-          backgroundColor: headerBlue,
-          elevation: 10,
-          title: Text(
-            'Tìm kiếm',
-            style: TextStyle(
-              color: mainBlue,
-              fontWeight: FontWeight.bold,
-              fontSize: 28,
-              letterSpacing: 1.1,
-            ),
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blue.shade50.withOpacity(0.6),
+              Colors.white,
+              Colors.grey.shade50,
+            ],
           ),
-          centerTitle: true,
-          iconTheme: IconThemeData(color: mainBlue),
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: _isLoading
+                  ? _buildLoadingState()
+                  : _isSearching
+                  ? _buildSearchResults()
+                  : _buildSuggestions(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + 16,
+        20,
+        20,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              SizedBox(height: 8),
-              AnimatedContainer(
-                duration: Duration(milliseconds: 350),
-                curve: Curves.easeOut,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.white, lightBlue],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(cardRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: shadowBlue,
-                      blurRadius: 16,
-                      offset: Offset(0, 6),
-                    ),
-                  ],
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.blue.shade700,
+                    size: 22,
+                  ),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 2),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        onChanged: _onSearch,
-                        style: TextStyle(fontSize: 16, color: mainBlue),
-                        decoration: InputDecoration(
-                          hintText: 'Nhập từ khóa...',
-                          hintStyle: TextStyle(color: Colors.blueGrey.shade300),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.search_rounded,
-                            color: accentBlue,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 8,
-                          ),
-                        ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.shade100, width: 1),
+                  ),
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    onChanged: _onSearch,
+                    onSubmitted: (value) {
+                      if (value.isNotEmpty) {
+                        _searchWithTerm(value);
+                      }
+                    },
+                    style: TextStyle(fontSize: 15, color: Colors.blue.shade800),
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm phụ tùng...',
+                      hintStyle: TextStyle(
+                        color: Colors.blueGrey.shade300,
+                        fontWeight: FontWeight.w400,
                       ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: Duration(milliseconds: 300),
-                      child: _controller.text.isNotEmpty
+                      border: InputBorder.none,
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: Colors.blue.shade400,
+                        size: 22,
+                      ),
+                      suffixIcon: _controller.text.isNotEmpty
                           ? IconButton(
-                              key: ValueKey('clear'),
                               icon: Icon(
                                 Icons.close_rounded,
-                                color: Colors.blue.shade300,
+                                color: Colors.blue.shade400,
+                                size: 20,
                               ),
                               onPressed: () {
-                                setState(() {
-                                  _controller.clear();
-                                  _results = [];
-                                });
+                                _controller.clear();
+                                _onSearch('');
                               },
                             )
-                          : SizedBox(width: 0),
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Đang tải dữ liệu...',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestions() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_recentSearches.isNotEmpty) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      size: 18,
+                      color: Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Tìm kiếm gần đây',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() => _recentSearches.clear());
+                  },
+                  child: Text(
+                    'Xóa tất cả',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red.shade400,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _recentSearches.map((search) {
+                return GestureDetector(
+                  onTap: () => _searchWithTerm(search),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.history_rounded,
+                          size: 14,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          search,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 28),
+          ],
+          Row(
+            children: [
+              Icon(
+                Icons.local_fire_department_rounded,
+                size: 18,
+                color: Colors.orange.shade500,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Phụ tùng phổ biến',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_allParts.isNotEmpty)
+            ...List.generate(
+              _allParts.length > 6 ? 6 : _allParts.length,
+              (index) => _PopularPartItem(
+                part: _allParts[index],
+                formatPrice: _formatPrice,
+                onTap: () => _selectPart(_allParts[index]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (_filteredParts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 48,
+                color: Colors.grey.shade400,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Không tìm thấy kết quả',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Thử tìm với từ khóa khác',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _filteredParts.length,
+      itemBuilder: (context, index) {
+        final part = _filteredParts[index];
+        return _SearchResultItem(
+          part: part,
+          index: index,
+          formatPrice: _formatPrice,
+          searchTerm: _controller.text,
+          onTap: () => _selectPart(part),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+}
+
+class _PopularPartItem extends StatelessWidget {
+  final PartModel part;
+  final String Function(double) formatPrice;
+  final VoidCallback onTap;
+
+  const _PopularPartItem({
+    required this.part,
+    required this.formatPrice,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: part.image.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        Utils.getBackendImgURL(part.image),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.build_rounded,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    )
+                  : Icon(Icons.build_rounded, color: Colors.grey.shade400),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    part.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        part.brand?.name ?? '',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      if (part.brand != null) ...[
+                        Container(
+                          width: 3,
+                          height: 3,
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade400,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${formatPrice(part.price)} đ',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Colors.grey.shade400,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchResultItem extends StatefulWidget {
+  final PartModel part;
+  final int index;
+  final String Function(double) formatPrice;
+  final String searchTerm;
+  final VoidCallback onTap;
+
+  const _SearchResultItem({
+    required this.part,
+    required this.index,
+    required this.formatPrice,
+    required this.searchTerm,
+    required this.onTap,
+  });
+
+  @override
+  State<_SearchResultItem> createState() => _SearchResultItemState();
+}
+
+class _SearchResultItemState extends State<_SearchResultItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _slideAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    Future.delayed(Duration(milliseconds: 50 * widget.index), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  TextSpan _highlightText(String text, String query) {
+    if (query.isEmpty) {
+      return TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.blue.shade800,
+        ),
+      );
+    }
+
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final startIndex = lowerText.indexOf(lowerQuery);
+
+    if (startIndex == -1) {
+      return TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.blue.shade800,
+        ),
+      );
+    }
+
+    final endIndex = startIndex + query.length;
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: text.substring(0, startIndex),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.blue.shade800,
+          ),
+        ),
+        TextSpan(
+          text: text.substring(startIndex, endIndex),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.orange.shade600,
+            backgroundColor: Colors.orange.shade50,
+          ),
+        ),
+        TextSpan(
+          text: text.substring(endIndex),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.blue.shade800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(20 * (1 - _slideAnimation.value), 0),
+          child: Opacity(
+            opacity: _slideAnimation.value.clamp(0.0, 1.0),
+            child: child,
+          ),
+        );
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: widget.part.image.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          Utils.getBackendImgURL(widget.part.image),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.build_rounded,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.build_rounded,
+                        color: Colors.grey.shade400,
+                        size: 28,
+                      ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: _highlightText(widget.part.name, widget.searchTerm),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        if (widget.part.brand != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              widget.part.brand!.name,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${widget.formatPrice(widget.part.price)} đ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 18),
-              Text(
-                'Kết quả tìm kiếm',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: mainBlue,
-                  letterSpacing: 0.5,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-              SizedBox(height: 18),
-              AnimatedSwitcher(
-                duration: Duration(milliseconds: 350),
-                child: _isSearching
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _results.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 48,
-                              color: Colors.grey.shade400,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              'Không có kết quả',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        physics: NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _results.length,
-                        separatorBuilder: (_, __) => SizedBox(height: 14),
-                        itemBuilder: (context, i) => Card(
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(cardRadius),
-                          ),
-                          color: Colors.white,
-                          child: ListTile(
-                            leading: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [accentBlue, mainBlue],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              padding: EdgeInsets.all(8),
-                              child: Icon(
-                                Icons.search_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                            title: Text(
-                              _results[i],
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                color: mainBlue,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.blue.shade600,
+                  size: 18,
+                ),
               ),
             ],
           ),

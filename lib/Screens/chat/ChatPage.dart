@@ -17,11 +17,15 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _currentTab = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() => _currentTab = _tabController.index);
+    });
   }
 
   @override
@@ -33,34 +37,213 @@ class _ChatPageState extends State<ChatPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: Colors.indigo.shade600,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+      backgroundColor: Colors.grey.shade50,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blue.shade50.withOpacity(0.6),
+              Colors.white,
+              Colors.grey.shade50,
+            ],
+          ),
         ),
-        title: const Text(
-          'Tin nhắn',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.6),
-          tabs: const [
-            Tab(icon: Icon(Icons.support_agent), text: 'Hỗ trợ'),
-            Tab(icon: Icon(Icons.smart_toy), text: 'AI Chat'),
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildTabBar(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: const [_AdminChatTab(), _AIChatTab()],
+              ),
+            ),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [_AdminChatTab(), _AIChatTab()],
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + 16,
+        20,
+        20,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                color: Colors.blue.shade700,
+                size: 22,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Tin nhắn',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _currentTab == 0 ? 'Hỗ trợ trực tuyến' : 'Trợ lý AI',
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 46),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _tabController.animateTo(0),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: _currentTab == 0
+                      ? LinearGradient(
+                          colors: [Colors.blue.shade500, Colors.blue.shade700],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _currentTab == 0
+                      ? [
+                          BoxShadow(
+                            color: Colors.blue.shade200.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.support_agent_rounded,
+                      size: 20,
+                      color: _currentTab == 0
+                          ? Colors.white
+                          : Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hỗ trợ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: _currentTab == 0
+                            ? Colors.white
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _tabController.animateTo(1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: _currentTab == 1
+                      ? LinearGradient(
+                          colors: [
+                            Colors.purple.shade400,
+                            Colors.purple.shade700,
+                          ],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _currentTab == 1
+                      ? [
+                          BoxShadow(
+                            color: Colors.purple.shade200.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.smart_toy_rounded,
+                      size: 20,
+                      color: _currentTab == 1
+                          ? Colors.white
+                          : Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'AI Chat',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: _currentTab == 1
+                            ? Colors.white
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -125,9 +308,7 @@ class _AdminChatTabState extends State<_AdminChatTab> {
     );
 
     _socket!.onConnect((_) {});
-
     _socket!.onDisconnect((_) {});
-
     _socket!.onConnectError((error) {
       debugPrint('Socket connection error: $error');
     });
@@ -249,11 +430,12 @@ class _AdminChatTabState extends State<_AdminChatTab> {
       children: [
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState()
               : _messages.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
                   onRefresh: _loadMessages,
+                  color: Colors.blue.shade600,
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
@@ -268,13 +450,37 @@ class _AdminChatTabState extends State<_AdminChatTab> {
                         isUser: msg.senderRole == 'user',
                         time: _formatTime(msg.createdAt),
                         isRead: msg.isRead,
+                        color: Colors.blue,
                       );
                     },
                   ),
                 ),
         ),
-        _buildInputArea(),
+        _buildInputArea(Colors.blue),
       ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Đang tải tin nhắn...',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+          ),
+        ],
+      ),
     );
   }
 
@@ -284,27 +490,30 @@ class _AdminChatTabState extends State<_AdminChatTab> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade100,
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.blue.shade50,
+              shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.support_agent,
-              size: 40,
-              color: Colors.indigo.shade600,
+              Icons.support_agent_rounded,
+              size: 48,
+              color: Colors.blue.shade400,
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          const SizedBox(height: 20),
+          Text(
             'Chưa có tin nhắn',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue.shade800,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Hãy gửi tin nhắn để được hỗ trợ',
-            style: TextStyle(color: Colors.grey.shade600),
+            style: TextStyle(color: Colors.grey.shade500),
           ),
         ],
       ),
@@ -319,11 +528,11 @@ class _AdminChatTabState extends State<_AdminChatTab> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 4,
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -331,78 +540,110 @@ class _AdminChatTabState extends State<_AdminChatTab> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.support_agent_rounded,
+                size: 16,
+                color: Colors.blue.shade600,
+              ),
+            ),
+            const SizedBox(width: 10),
             Text(
-              'Admin đang nhập...',
+              'Admin đang nhập',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
             const SizedBox(width: 8),
-            _AnimatedDots(),
+            _AnimatedDots(color: Colors.blue),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputArea() {
+  Widget _buildInputArea(Color accentColor) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 5,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: TextField(
                 controller: _messageController,
                 onChanged: _onTyping,
+                style: TextStyle(color: accentColor.shade800),
                 decoration: InputDecoration(
                   hintText: 'Nhập tin nhắn...',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                    horizontal: 20,
+                    vertical: 14,
                   ),
                 ),
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _isSending ? null : _sendMessage,
+            child: Container(
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.indigo.shade500, Colors.purple.shade600],
+                  colors: [accentColor.shade500, accentColor.shade700],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentColor.shade200.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: IconButton(
-                onPressed: _isSending ? null : _sendMessage,
-                icon: _isSending
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send, color: Colors.white),
-              ),
+              child: _isSending
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: const AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -414,84 +655,6 @@ class _AdminChatTabState extends State<_AdminChatTab> {
     _socket?.dispose();
     _messageController.dispose();
     _scrollController.dispose();
-    super.dispose();
-  }
-}
-
-class _AnimatedDots extends StatefulWidget {
-  @override
-  State<_AnimatedDots> createState() => _AnimatedDotsState();
-}
-
-class _AnimatedDotsState extends State<_AnimatedDots>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _controllers;
-  late List<Animation<double>> _animations;
-
-  @override
-  void initState() {
-    super.initState();
-    _controllers = List.generate(3, (index) {
-      return AnimationController(
-        duration: const Duration(milliseconds: 300),
-        vsync: this,
-      );
-    });
-
-    _animations = _controllers.map((controller) {
-      return Tween<double>(
-        begin: 0,
-        end: -5,
-      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
-    }).toList();
-
-    _startAnimation();
-  }
-
-  void _startAnimation() async {
-    while (mounted) {
-      for (int i = 0; i < 3; i++) {
-        if (!mounted) return;
-        await Future.delayed(const Duration(milliseconds: 100));
-        _controllers[i].forward();
-        await Future.delayed(const Duration(milliseconds: 100));
-        _controllers[i].reverse();
-      }
-      await Future.delayed(const Duration(milliseconds: 200));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _animations[index],
-          builder: (context, child) {
-            return Transform.translate(
-              offset: Offset(0, _animations[index].value),
-              child: Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            );
-          },
-        );
-      }),
-    );
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
     super.dispose();
   }
 }
@@ -586,6 +749,7 @@ class _AIChatTabState extends State<_AIChatTab> {
                       isUser: msg.isUser,
                       time: _formatTime(msg.time),
                       isRead: msg.isRead,
+                      color: Colors.purple,
                     );
                   },
                 ),
@@ -607,16 +771,31 @@ class _AIChatTabState extends State<_AIChatTab> {
               height: 80,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purple.shade400, Colors.indigo.shade600],
+                  colors: [Colors.purple.shade400, Colors.purple.shade700],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.purple.shade200.withOpacity(0.5),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.smart_toy, size: 40, color: Colors.white),
+              child: const Icon(
+                Icons.smart_toy_rounded,
+                size: 40,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            const SizedBox(height: 20),
+            Text(
               'Xin chào! 👋',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple.shade800,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -624,10 +803,10 @@ class _AIChatTabState extends State<_AIChatTab> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600, height: 1.5),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 10,
+              runSpacing: 10,
               alignment: WrapAlignment.center,
               children: [
                 _SuggestionChip(
@@ -661,11 +840,11 @@ class _AIChatTabState extends State<_AIChatTab> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 4,
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -673,10 +852,28 @@ class _AIChatTabState extends State<_AIChatTab> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade400, Colors.purple.shade600],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.smart_toy_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 10),
             Text(
-              'AI đang suy nghĩ...',
+              'AI đang suy nghĩ',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
+            const SizedBox(width: 8),
+            _AnimatedDots(color: Colors.purple),
           ],
         ),
       ),
@@ -685,63 +882,81 @@ class _AIChatTabState extends State<_AIChatTab> {
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 5,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: TextField(
                 controller: _messageController,
+                style: TextStyle(color: Colors.purple.shade800),
                 decoration: InputDecoration(
                   hintText: 'Hỏi điều gì đó...',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                    horizontal: 20,
+                    vertical: 14,
                   ),
                 ),
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _isLoading ? null : _sendMessage,
+            child: Container(
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purple.shade500, Colors.indigo.shade600],
+                  colors: [Colors.purple.shade500, Colors.purple.shade700],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.purple.shade200.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: IconButton(
-                onPressed: _isLoading ? null : _sendMessage,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send, color: Colors.white),
-              ),
+              child: _isLoading
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: const AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -754,16 +969,57 @@ class _AIChatTabState extends State<_AIChatTab> {
   }
 }
 
+class _ChatMessage {
+  final String message;
+  final String senderRole;
+  final DateTime? createdAt;
+  final bool isRead;
+
+  _ChatMessage({
+    required this.message,
+    required this.senderRole,
+    this.createdAt,
+    this.isRead = false,
+  });
+
+  factory _ChatMessage.fromJson(Map<String, dynamic> json) {
+    return _ChatMessage(
+      message: json['message'] ?? '',
+      senderRole: json['senderRole'] ?? 'user',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      isRead: json['isRead'] ?? false,
+    );
+  }
+}
+
+class _AIMessage {
+  final String text;
+  final bool isUser;
+  final DateTime time;
+  final bool isRead;
+
+  _AIMessage({
+    required this.text,
+    required this.isUser,
+    required this.time,
+    this.isRead = false,
+  });
+}
+
 class _MessageBubble extends StatelessWidget {
   final String message;
   final bool isUser;
   final String time;
   final bool isRead;
+  final Color color;
 
   const _MessageBubble({
     required this.message,
     required this.isUser,
     required this.time,
+    required this.color,
     this.isRead = false,
   });
 
@@ -773,35 +1029,45 @@ class _MessageBubble extends StatelessWidget {
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
           gradient: isUser
               ? LinearGradient(
-                  colors: [Colors.indigo.shade500, Colors.purple.shade600],
+                  colors: [
+                    color == Colors.purple
+                        ? Colors.purple.shade500
+                        : Colors.blue.shade500,
+                    color == Colors.purple
+                        ? Colors.purple.shade700
+                        : Colors.blue.shade700,
+                  ],
                 )
               : null,
           color: isUser ? null : Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isUser ? 20 : 6),
+            bottomRight: Radius.circular(isUser ? 6 : 20),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 4,
+              color: isUser
+                  ? (color == Colors.purple
+                            ? Colors.purple.shade200
+                            : Colors.blue.shade200)
+                        .withOpacity(0.4)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: isUser
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               message,
@@ -811,7 +1077,7 @@ class _MessageBubble extends StatelessWidget {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -820,14 +1086,14 @@ class _MessageBubble extends StatelessWidget {
                   style: TextStyle(
                     color: isUser
                         ? Colors.white.withOpacity(0.7)
-                        : Colors.grey.shade500,
+                        : Colors.grey.shade400,
                     fontSize: 11,
                   ),
                 ),
                 if (isUser && isRead) ...[
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.done_all,
+                    Icons.done_all_rounded,
                     size: 14,
                     color: Colors.white.withOpacity(0.85),
                   ),
@@ -852,56 +1118,134 @@ class _SuggestionChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.purple.shade50,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.purple.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purple.shade100.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           text,
-          style: TextStyle(color: Colors.purple.shade700, fontSize: 13),
+          style: TextStyle(
+            color: Colors.purple.shade700,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
   }
 }
 
-class _ChatMessage {
-  final String message;
-  final String senderRole;
-  final DateTime? createdAt;
-  final bool isRead;
+class _AnimatedDots extends StatefulWidget {
+  final Color color;
 
-  _ChatMessage({
-    required this.message,
-    required this.senderRole,
-    this.createdAt,
-    this.isRead = false,
-  });
+  const _AnimatedDots({required this.color});
 
-  factory _ChatMessage.fromJson(Map<String, dynamic> json) {
-    return _ChatMessage(
-      message: json['message'] ?? '',
-      senderRole: json['senderRole'] ?? 'user',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      isRead: json['isRead'] ?? false,
+  @override
+  State<_AnimatedDots> createState() => _AnimatedDotsState();
+}
+
+class _AnimatedDotsState extends State<_AnimatedDots>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(3, (index) {
+      return AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: this,
+      );
+    });
+
+    _animations = _controllers.map((controller) {
+      return Tween<double>(
+        begin: 0,
+        end: -5,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
+    }).toList();
+
+    _startAnimation();
+  }
+
+  void _startAnimation() async {
+    while (mounted) {
+      for (int i = 0; i < 3; i++) {
+        if (!mounted) return;
+        await Future.delayed(const Duration(milliseconds: 100));
+        _controllers[i].forward();
+        await Future.delayed(const Duration(milliseconds: 100));
+        _controllers[i].reverse();
+      }
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return AnimatedBuilder(
+          animation: _animations[index],
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _animations[index].value),
+              child: Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: widget.color.shade400,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
+        );
+      }),
     );
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 }
 
-class _AIMessage {
-  final String text;
-  final bool isUser;
-  final DateTime time;
-  final bool isRead;
+extension _ColorShade on Color {
+  Color get shade200 {
+    final hsl = HSLColor.fromColor(this);
+    return hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
+  }
 
-  _AIMessage({
-    required this.text,
-    required this.isUser,
-    required this.time,
-    this.isRead = false,
-  });
+  Color get shade400 {
+    final hsl = HSLColor.fromColor(this);
+    return hsl.withLightness((hsl.lightness + 0.05).clamp(0.0, 1.0)).toColor();
+  }
+
+  Color get shade500 => this;
+
+  Color get shade700 {
+    final hsl = HSLColor.fromColor(this);
+    return hsl.withLightness((hsl.lightness - 0.1).clamp(0.0, 1.0)).toColor();
+  }
+
+  Color get shade800 {
+    final hsl = HSLColor.fromColor(this);
+    return hsl.withLightness((hsl.lightness - 0.2).clamp(0.0, 1.0)).toColor();
+  }
 }

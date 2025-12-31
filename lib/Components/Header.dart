@@ -40,17 +40,24 @@ class _HeaderState extends State<Header> {
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: EdgeInsets.only(left: 4),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'Assets/Images/logo_garagehub.png',
-                  width: widget.logoSize,
-                  height: widget.logoSize,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Icon(
-                    Icons.image,
-                    size: widget.logoSize * 0.7,
-                    color: Colors.blue.shade200,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/home', (route) => false);
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'Assets/Images/logo_garagehub.png',
+                    width: widget.logoSize,
+                    height: widget.logoSize,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.image,
+                      size: widget.logoSize * 0.7,
+                      color: Colors.blue.shade200,
+                    ),
                   ),
                 ),
               ),

@@ -90,7 +90,7 @@ class Utils {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    // Tạo Cloudinary URL từ public_id
+
     // Format: https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}
     return 'https://res.cloudinary.com/$cloudinaryCloudName/image/upload/$imagePath';
   }
