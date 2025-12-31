@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../Services/ChatService.dart';
 import '../../Utils.dart';
 
@@ -13,10 +15,13 @@ class _ChatScreenState extends State<ChatScreen> {
   final ChatService _chatService = ChatService();
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
 
   List<ChatMessage> _messages = [];
+  List<String> _selectedImages = [];
   bool _isLoading = true;
   bool _isSending = false;
+  bool _isUploading = false;
   String get _conversationId => Utils.userId;
 
   @override
@@ -48,26 +53,75 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  Future<void> _pickImages() async {
+    try {
+      final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+      if (pickedFiles.isNotEmpty) {
+        setState(() {
+          _selectedImages.addAll(pickedFiles.map((f) => f.path));
+          if (_selectedImages.length > 5) {
+            _selectedImages = _selectedImages.sublist(0, 5);
+            _showSnackBar('Chỉ được chọn tối đa 5 ảnh', isError: true);
+          }
+        });
+      }
+    } catch (e) {
+      _showSnackBar('Lỗi khi chọn ảnh', isError: true);
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty && _selectedImages.isEmpty) return;
 
     _messageController.clear();
-    setState(() => _isSending = true);
+    final imagesToSend = List<String>.from(_selectedImages);
+    setState(() {
+      _isSending = true;
+      _selectedImages.clear();
+    });
+
+    List<String> uploadedUrls = [];
+    if (imagesToSend.isNotEmpty) {
+      setState(() => _isUploading = true);
+      uploadedUrls = await _chatService.uploadImages(imagesToSend);
+      setState(() => _isUploading = false);
+
+      if (uploadedUrls.isEmpty && imagesToSend.isNotEmpty) {
+        _showSnackBar('Upload ảnh thất bại', isError: true);
+        setState(() => _isSending = false);
+        return;
+      }
+    }
 
     final tempMessage = ChatMessage(
       conversationId: _conversationId,
       senderId: Utils.userId,
       senderRole: 'user',
-      message: text,
+      message: text.isEmpty && uploadedUrls.isNotEmpty ? '📷 Đã gửi ảnh' : text,
       createdAt: DateTime.now(),
+      attachments: uploadedUrls,
     );
     setState(() {
       _messages.add(tempMessage);
     });
     _scrollToBottom();
 
-    final result = await _chatService.sendMessage(_conversationId, text);
+    final result = await _chatService.sendMessage(
+      _conversationId,
+      text.isEmpty && uploadedUrls.isNotEmpty ? '📷 Đã gửi ảnh' : text,
+      attachments: uploadedUrls,
+    );
 
     setState(() => _isSending = false);
 
@@ -136,6 +190,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               time: _formatTime(msg.createdAt),
                               isRead: msg.isRead,
                               index: index,
+                              attachments: msg.attachments,
                             );
                           },
                         ),
@@ -337,63 +392,157 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextField(
-                controller: _messageController,
-                style: TextStyle(color: Colors.blue.shade800),
-                decoration: InputDecoration(
-                  hintText: 'Nhập tin nhắn...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                ),
-                onSubmitted: (_) => _sendMessage(),
+          // Image preview
+          if (_selectedImages.isNotEmpty)
+            Container(
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _selectedImages.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      Container(
+                        width: 80,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                            image: FileImage(File(_selectedImages[index])),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: () => _removeImage(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _isSending ? null : _sendMessage,
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade500, Colors.blue.shade700],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.shade200.withOpacity(0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          // Uploading indicator
+          if (_isUploading)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.blue.shade600),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Đang upload ảnh...',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
                 ],
               ),
-              child: _isSending
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: const AlwaysStoppedAnimation(Colors.white),
-                      ),
-                    )
-                  : const Icon(
-                      Icons.send_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
             ),
+          // Input row
+          Row(
+            children: [
+              // Image picker button
+              GestureDetector(
+                onTap: _isSending ? null : _pickImages,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.image_rounded,
+                    color: Colors.blue.shade600,
+                    size: 24,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    style: TextStyle(color: Colors.blue.shade800),
+                    decoration: InputDecoration(
+                      hintText: 'Nhập tin nhắn...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: _isSending ? null : _sendMessage,
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade500, Colors.blue.shade700],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.shade200.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: _isSending
+                      ? SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: const AlwaysStoppedAnimation(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -414,6 +563,7 @@ class _MessageBubble extends StatefulWidget {
   final String time;
   final bool isRead;
   final int index;
+  final List<String> attachments;
 
   const _MessageBubble({
     required this.message,
@@ -421,6 +571,7 @@ class _MessageBubble extends StatefulWidget {
     required this.time,
     required this.index,
     this.isRead = false,
+    this.attachments = const [],
   });
 
   @override
@@ -507,14 +658,81 @@ class _MessageBubbleState extends State<_MessageBubble>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                widget.message,
-                style: TextStyle(
-                  color: widget.isUser ? Colors.white : Colors.grey.shade800,
-                  fontSize: 14,
-                  height: 1.4,
+              // Display attachments
+              if (widget.attachments.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    children: widget.attachments.map((url) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => Dialog(
+                                child: InteractiveViewer(
+                                  child: Image.network(url),
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              url,
+                              width: 200,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width: 200,
+                                      height: 150,
+                                      color: widget.isUser
+                                          ? Colors.blue.shade300
+                                          : Colors.grey.shade200,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation(
+                                            widget.isUser
+                                                ? Colors.white
+                                                : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 200,
+                                  height: 100,
+                                  color: Colors.grey.shade300,
+                                  child: const Center(
+                                    child: Icon(Icons.broken_image, size: 40),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
+              ],
+              // Text message (only show if not empty placeholder)
+              if (widget.message.isNotEmpty &&
+                  widget.message != '📷 Đã gửi ảnh')
+                Text(
+                  widget.message,
+                  style: TextStyle(
+                    color: widget.isUser ? Colors.white : Colors.grey.shade800,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
               const SizedBox(height: 6),
               Row(
                 mainAxisSize: MainAxisSize.min,

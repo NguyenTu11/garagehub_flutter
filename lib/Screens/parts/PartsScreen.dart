@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Components/MainLayout.dart';
+import '../../Components/ShimmerLoading.dart';
 import '../../Models/PartModel.dart';
 import '../../Models/BrandModel.dart';
 import '../../Services/PartService.dart';
@@ -69,8 +70,13 @@ class _PartsScreenState extends State<PartsScreen> {
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final partsResponse = await _partService.getAllParts();
-      final brandsResponse = await _brandService.getAllBrands();
+      final results = await Future.wait([
+        _partService.getAllParts(),
+        _brandService.getAllBrands(),
+        Future.delayed(const Duration(milliseconds: 1500)),
+      ]);
+      final partsResponse = results[0];
+      final brandsResponse = results[1];
 
       if (partsResponse.status) {
         setState(() {
@@ -478,26 +484,7 @@ class _PartsScreenState extends State<PartsScreen> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Đang tải...',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          ),
-        ],
-      ),
-    );
+    return _isGridView ? const ShimmerProductGrid() : const ShimmerListView();
   }
 
   Widget _buildEmptyState() {

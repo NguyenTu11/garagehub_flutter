@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../Components/ShimmerLoading.dart';
 import '../../Models/PartModel.dart';
 import '../../Models/ReviewModel.dart';
 import '../../Services/PartService.dart';
@@ -53,8 +54,13 @@ class _PartDetailScreenState extends State<PartDetailScreen>
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final part = await _partService.getPartById(widget.partId);
-      final reviews = await _partService.getPartReviews(widget.partId);
+      final results = await Future.wait([
+        _partService.getPartById(widget.partId),
+        _partService.getPartReviews(widget.partId),
+        Future.delayed(const Duration(milliseconds: 1500)),
+      ]);
+      final part = results[0] as PartModel?;
+      final reviews = results[1];
       setState(() {
         _part = part;
         _reviewsResponse = reviews;
@@ -176,26 +182,7 @@ class _PartDetailScreenState extends State<PartDetailScreen>
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Đang tải...',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          ),
-        ],
-      ),
-    );
+    return const ShimmerDetailPage();
   }
 
   Widget _buildEmptyState() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../Components/MainLayout.dart';
+import '../../Components/ShimmerLoading.dart';
 import '../../Models/BrandModel.dart';
 import '../../Services/BrandService.dart';
 import '../../Utils.dart';
@@ -44,7 +45,11 @@ class _BrandsScreenState extends State<BrandsScreen>
   Future<void> _fetchBrands() async {
     setState(() => _isLoading = true);
     try {
-      final response = await _brandService.getAllBrands();
+      final results = await Future.wait([
+        _brandService.getAllBrands(),
+        Future.delayed(const Duration(milliseconds: 1500)),
+      ]);
+      final response = results[0];
       if (response.status) {
         setState(() {
           _brands = response.data;
@@ -207,31 +212,7 @@ class _BrandsScreenState extends State<BrandsScreen>
             ),
             Expanded(
               child: _isLoading
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blue.shade600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Đang tải...',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
+                  ? const ShimmerBrandGrid()
                   : _filteredBrands.isEmpty
                   ? Center(
                       child: Column(

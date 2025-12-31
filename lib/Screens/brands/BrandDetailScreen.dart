@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../Components/ShimmerLoading.dart';
 import '../../Models/BrandModel.dart';
 import '../../Models/PartModel.dart';
 import '../../Services/BrandService.dart';
@@ -49,8 +50,13 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      final brand = await _brandService.getBrandById(widget.brandId);
-      final partsResponse = await _partService.getAllParts();
+      final results = await Future.wait([
+        _brandService.getBrandById(widget.brandId),
+        _partService.getAllParts(),
+        Future.delayed(const Duration(milliseconds: 1500)),
+      ]);
+      final brand = results[0] as BrandModel?;
+      final partsResponse = results[1];
       final brandParts = partsResponse.data
           .where(
             (part) =>
@@ -95,26 +101,7 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Đang tải...',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          ),
-        ],
-      ),
-    );
+    return const ShimmerDetailPage();
   }
 
   Widget _buildEmptyState() {

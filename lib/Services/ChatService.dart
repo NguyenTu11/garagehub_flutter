@@ -10,6 +10,7 @@ class ChatMessage {
   final String message;
   final bool isRead;
   final DateTime? createdAt;
+  final List<String> attachments;
 
   ChatMessage({
     this.id,
@@ -19,6 +20,7 @@ class ChatMessage {
     required this.message,
     this.isRead = false,
     this.createdAt,
+    this.attachments = const [],
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -34,11 +36,18 @@ class ChatMessage {
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : null,
+      attachments: json['attachments'] != null
+          ? List<String>.from(json['attachments'])
+          : [],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'conversationId': conversationId, 'message': message};
+    return {
+      'conversationId': conversationId,
+      'message': message,
+      'attachments': attachments,
+    };
   }
 }
 
@@ -67,8 +76,9 @@ class ChatService {
 
   Future<ChatMessage?> sendMessage(
     String conversationId,
-    String message,
-  ) async {
+    String message, {
+    List<String>? attachments,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('${Utils.baseUrl}/chat/messages'),
@@ -79,6 +89,7 @@ class ChatService {
         body: json.encode({
           'conversationId': conversationId,
           'message': message,
+          'attachments': attachments ?? [],
         }),
       );
 
@@ -92,6 +103,34 @@ class ChatService {
     } catch (e) {
       print('Error sending message: $e');
       return null;
+    }
+  }
+
+  Future<List<String>> uploadImages(List<String> imagePaths) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${Utils.baseUrl}/chat/upload'),
+      );
+      request.headers['Authorization'] = 'Bearer ${Utils.token}';
+
+      for (var path in imagePaths) {
+        request.files.add(await http.MultipartFile.fromPath('images', path));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['urls'] != null) {
+          return List<String>.from(data['urls']);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error uploading images: $e');
+      return [];
     }
   }
 
