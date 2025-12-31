@@ -12,6 +12,8 @@ class PartModel {
   String? brandId;
   BrandModel? brand;
   String image;
+  double averageRating;
+  int reviewCount;
 
   PartModel({
     this.id,
@@ -25,6 +27,8 @@ class PartModel {
     this.brandId,
     this.brand,
     this.image = '',
+    this.averageRating = 0,
+    this.reviewCount = 0,
   });
 
   factory PartModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +54,8 @@ class PartModel {
           ? BrandModel.fromJson(json['brandId'])
           : null,
       image: json['image'] ?? '',
+      averageRating: (json['averageRating'] ?? 0).toDouble(),
+      reviewCount: json['reviewCount'] ?? 0,
     );
   }
 

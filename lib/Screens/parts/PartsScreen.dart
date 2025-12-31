@@ -39,7 +39,6 @@ class _PartsScreenState extends State<PartsScreen> {
     _loadViewPreference();
     _fetchData();
 
-    // Apply initial search term if provided
     if (widget.initialSearchTerm != null &&
         widget.initialSearchTerm!.isNotEmpty) {
       _searchController.text = widget.initialSearchTerm!;
@@ -713,7 +712,7 @@ class _PartGridCardState extends State<_PartGridCard>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -736,81 +735,111 @@ class _PartGridCardState extends State<_PartGridCard>
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text(
                           widget.part.name,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: Colors.blue.shade800,
-                            letterSpacing: 0.1,
+                            height: 1.2,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                            ...List.generate(5, (index) {
+                              final rating = widget.part.averageRating;
+                              if (index < rating.floor()) {
+                                return Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.amber.shade600,
+                                  size: 14,
+                                );
+                              } else if (index < rating) {
+                                return Icon(
+                                  Icons.star_half_rounded,
+                                  color: Colors.amber.shade600,
+                                  size: 14,
+                                );
+                              } else {
+                                return Icon(
+                                  Icons.star_outline_rounded,
+                                  color: Colors.amber.shade300,
+                                  size: 14,
+                                );
+                              }
+                            }),
+                            if (widget.part.averageRating > 0) ...[
+                              const SizedBox(width: 3),
+                              Text(
+                                widget.part.averageRating.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.amber.shade700,
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
+                            ],
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '${widget.formatPrice(widget.part.price)} VND',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
                               child: Text(
-                                '${widget.formatPrice(widget.part.price)} VND',
+                                widget.part.brand?.name ?? '',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade700,
+                                  color: Colors.grey.shade500,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    widget.part.brand?.name ?? '',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: widget.part.quantity > 0
+                                    ? Colors.blue.shade50
+                                    : Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${widget.part.quantity} ${widget.part.unit}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: widget.part.quantity > 0
+                                      ? Colors.blue.shade700
+                                      : Colors.red.shade700,
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: widget.part.quantity > 0
-                                        ? Colors.blue.shade50
-                                        : Colors.red.shade50,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '${widget.part.quantity}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: widget.part.quantity > 0
-                                          ? Colors.blue.shade700
-                                          : Colors.red.shade700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
@@ -964,36 +993,58 @@ class _PartListCardState extends State<_PartListCard>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        ...List.generate(5, (index) {
+                          final rating = widget.part.averageRating;
+                          if (index < rating.floor()) {
+                            return Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber.shade600,
+                              size: 14,
+                            );
+                          } else if (index < rating) {
+                            return Icon(
+                              Icons.star_half_rounded,
+                              color: Colors.amber.shade600,
+                              size: 14,
+                            );
+                          } else {
+                            return Icon(
+                              Icons.star_outline_rounded,
+                              color: Colors.amber.shade300,
+                              size: 14,
+                            );
+                          }
+                        }),
+                        const SizedBox(width: 4),
+                        if (widget.part.averageRating > 0)
+                          Text(
+                            widget.part.averageRating.toStringAsFixed(1),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.amber.shade700,
+                            ),
+                          ),
+                        if (widget.part.reviewCount > 0)
+                          Text(
+                            ' (${widget.part.reviewCount})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(
-                          Icons.storefront_rounded,
-                          size: 13,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            widget.part.brand?.name ?? 'Không xác định',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                            horizontal: 8,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.green.shade50,
@@ -1008,10 +1059,19 @@ class _PartListCardState extends State<_PartListCard>
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.part.brand?.name ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 6,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: widget.part.quantity > 0
@@ -1019,28 +1079,15 @@ class _PartListCardState extends State<_PartListCard>
                                 : Colors.red.shade50,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.inventory_2_outlined,
-                                size: 12,
-                                color: widget.part.quantity > 0
-                                    ? Colors.blue.shade600
-                                    : Colors.red.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${widget.part.quantity} ${widget.part.unit}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: widget.part.quantity > 0
-                                      ? Colors.blue.shade700
-                                      : Colors.red.shade700,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            '${widget.part.quantity} ${widget.part.unit}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: widget.part.quantity > 0
+                                  ? Colors.blue.shade700
+                                  : Colors.red.shade700,
+                            ),
                           ),
                         ),
                       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../Models/PartModel.dart';
+import '../../Models/ReviewModel.dart';
 import '../../Services/PartService.dart';
 import '../../Services/CartService.dart';
 import '../../Utils.dart';
@@ -19,7 +20,12 @@ class _PartDetailScreenState extends State<PartDetailScreen>
   final CartService _cartService = CartService();
 
   PartModel? _part;
+  ReviewsResponse? _reviewsResponse;
   bool _isLoading = true;
+  bool _isSubmittingReview = false;
+
+  int _selectedRating = 5;
+  final _commentController = TextEditingController();
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -34,25 +40,62 @@ class _PartDetailScreenState extends State<PartDetailScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    _fetchPart();
+    _fetchData();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchPart() async {
+  Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
       final part = await _partService.getPartById(widget.partId);
-      setState(() => _part = part);
+      final reviews = await _partService.getPartReviews(widget.partId);
+      setState(() {
+        _part = part;
+        _reviewsResponse = reviews;
+      });
     } catch (e) {
-      debugPrint('Error fetching part details: $e');
+      debugPrint('Error fetching data: $e');
     } finally {
       setState(() => _isLoading = false);
       _animationController.forward();
+    }
+  }
+
+  Future<void> _submitReview() async {
+    if (_commentController.text.trim().isEmpty) {
+      _showSnackBar('Vui lòng nhập nội dung đánh giá', isError: true);
+      return;
+    }
+
+    if (Utils.token.isEmpty) {
+      _showSnackBar('Vui lòng đăng nhập để đánh giá', isError: true);
+      return;
+    }
+
+    setState(() => _isSubmittingReview = true);
+
+    final result = await _partService.createReview(
+      widget.partId,
+      _selectedRating,
+      _commentController.text.trim(),
+    );
+
+    setState(() => _isSubmittingReview = false);
+
+    if (result['success'] == true) {
+      _commentController.clear();
+      _selectedRating = 5;
+      _showSnackBar('Đánh giá thành công!');
+      final reviews = await _partService.getPartReviews(widget.partId);
+      setState(() => _reviewsResponse = reviews);
+    } else {
+      _showSnackBar(result['message'] ?? 'Có lỗi xảy ra', isError: true);
     }
   }
 
@@ -63,6 +106,11 @@ class _PartDetailScreenState extends State<PartDetailScreen>
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]}.',
         );
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   Future<void> _addToCart() async {
@@ -297,6 +345,8 @@ class _PartDetailScreenState extends State<PartDetailScreen>
                       ),
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: 12),
+                    _buildRatingDisplay(),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -374,9 +424,250 @@ class _PartDetailScreenState extends State<PartDetailScreen>
                         ),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    _buildReviewsSection(),
                     const SizedBox(height: 24),
                   ],
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingDisplay() {
+    final averageRating = _reviewsResponse?.averageRating ?? 0;
+    final reviewCount = _reviewsResponse?.reviewCount ?? 0;
+
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade50,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...List.generate(5, (index) {
+              if (index < averageRating.floor()) {
+                return Icon(
+                  Icons.star_rounded,
+                  color: Colors.amber.shade600,
+                  size: 20,
+                );
+              } else if (index < averageRating) {
+                return Icon(
+                  Icons.star_half_rounded,
+                  color: Colors.amber.shade600,
+                  size: 20,
+                );
+              } else {
+                return Icon(
+                  Icons.star_outline_rounded,
+                  color: Colors.amber.shade300,
+                  size: 20,
+                );
+              }
+            }),
+            const SizedBox(width: 8),
+            Text(
+              averageRating.toStringAsFixed(1),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.amber.shade800,
+              ),
+            ),
+            Text(
+              ' ($reviewCount đánh giá)',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.rate_review_rounded,
+              color: Colors.blue.shade600,
+              size: 24,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Đánh giá sản phẩm',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildAddReviewForm(),
+        const SizedBox(height: 24),
+        if (_reviewsResponse != null && _reviewsResponse!.reviews.isNotEmpty)
+          ..._reviewsResponse!.reviews.map(
+            (review) => _ReviewCard(review: review, formatDate: _formatDate),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.rate_review_outlined,
+                    size: 40,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Chưa có đánh giá nào',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                  ),
+                  Text(
+                    'Hãy là người đầu tiên đánh giá!',
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAddReviewForm() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Viết đánh giá của bạn',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                'Đánh giá: ',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              ),
+              const SizedBox(width: 8),
+              ...List.generate(5, (index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedRating = index + 1);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Icon(
+                      index < _selectedRating
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      color: Colors.amber.shade600,
+                      size: 32,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: TextField(
+              controller: _commentController,
+              maxLines: 3,
+              style: TextStyle(fontSize: 14, color: Colors.blue.shade800),
+              decoration: InputDecoration(
+                hintText: 'Nhập nội dung đánh giá...',
+                hintStyle: TextStyle(color: Colors.grey.shade400),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _isSubmittingReview ? null : _submitReview,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade500, Colors.blue.shade700],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.shade200.withOpacity(0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: _isSubmittingReview
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: const AlwaysStoppedAnimation(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Gửi đánh giá',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -396,6 +687,107 @@ class _PartDetailScreenState extends State<PartDetailScreen>
       ),
       child: Center(
         child: Icon(Icons.build_rounded, size: 60, color: Colors.blue.shade300),
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  final ReviewModel review;
+  final String Function(DateTime?) formatDate;
+
+  const _ReviewCard({required this.review, required this.formatDate});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.blue.shade600],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    review.userName.isNotEmpty
+                        ? review.userName[0].toUpperCase()
+                        : 'A',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.userName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                    Text(
+                      formatDate(review.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < review.rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: Colors.amber.shade600,
+                    size: 16,
+                  );
+                }),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            review.comment,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }
