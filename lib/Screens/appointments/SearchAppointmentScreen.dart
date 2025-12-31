@@ -176,35 +176,37 @@ class _SearchAppointmentScreenState extends State<SearchAppointmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildSearchBox(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : !_hasSearched
+                    ? _buildEmptyState()
+                    : _appointments.isEmpty
+                    ? _buildNoResults()
+                    : _buildAppointmentsList(),
+              ),
+              _buildBookButton(),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildSearchBox(),
-            Expanded(
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : !_hasSearched
-                  ? _buildEmptyState()
-                  : _appointments.isEmpty
-                  ? _buildNoResults()
-                  : _buildAppointmentsList(),
-            ),
-            _buildBookButton(),
-          ],
         ),
       ),
     );
@@ -212,12 +214,7 @@ class _SearchAppointmentScreenState extends State<SearchAppointmentScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

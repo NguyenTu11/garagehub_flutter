@@ -82,13 +82,15 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: _isLoading
-          ? _buildLoadingState()
-          : _brand == null
-          ? _buildEmptyState()
-          : _buildContent(),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: _isLoading
+            ? _buildLoadingState()
+            : _brand == null
+            ? _buildEmptyState()
+            : _buildContent(),
+      ),
     );
   }
 

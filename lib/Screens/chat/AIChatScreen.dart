@@ -53,46 +53,48 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.purple.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.purple.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _messages.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _messages.length + (_isLoading ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (_isLoading && index == _messages.length) {
+                            return _buildTypingIndicator();
+                          }
+                          final msg = _messages[index];
+                          return _MessageBubble(
+                            message: msg.text,
+                            isUser: msg.isUser,
+                            time: _formatTime(msg.time),
+                            index: index,
+                          );
+                        },
+                      ),
+              ),
+              _buildInputArea(),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: _messages.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _messages.length + (_isLoading ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (_isLoading && index == _messages.length) {
-                          return _buildTypingIndicator();
-                        }
-                        final msg = _messages[index];
-                        return _MessageBubble(
-                          message: msg.text,
-                          isUser: msg.isUser,
-                          time: _formatTime(msg.time),
-                          index: index,
-                        );
-                      },
-                    ),
-            ),
-            _buildInputArea(),
-          ],
         ),
       ),
     );
@@ -100,12 +102,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

@@ -59,49 +59,46 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _cartItems.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: _loadCart,
+                        color: Colors.blue.shade600,
+                        child: _buildCartContent(),
+                      ),
+              ),
             ],
           ),
         ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : _cartItems.isEmpty
-                  ? _buildEmptyState()
-                  : RefreshIndicator(
-                      onRefresh: _loadCart,
-                      color: Colors.blue.shade600,
-                      child: _buildCartContent(),
-                    ),
-            ),
-          ],
-        ),
+        bottomNavigationBar: _cartItems.isEmpty ? null : _buildBottomBar(),
       ),
-      bottomNavigationBar: _cartItems.isEmpty ? null : _buildBottomBar(),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

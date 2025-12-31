@@ -198,390 +198,400 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
-            ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSection(
-                        title: 'Thông tin khách hàng',
-                        icon: Icons.person_rounded,
-                        color: Colors.blue,
-                        child: Column(
-                          children: [
-                            _buildTextField(
-                              controller: _nameController,
-                              label: 'Họ tên *',
-                              icon: Icons.person_outline_rounded,
-                              validator: (v) => v?.isEmpty == true
-                                  ? 'Vui lòng nhập họ tên'
-                                  : null,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _phoneController,
-                              label: 'Số điện thoại *',
-                              icon: Icons.phone_rounded,
-                              keyboardType: TextInputType.phone,
-                              validator: (v) => v?.isEmpty == true
-                                  ? 'Vui lòng nhập SĐT'
-                                  : null,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _emailController,
-                              label: 'Email (không bắt buộc)',
-                              icon: Icons.email_rounded,
-                              keyboardType: TextInputType.emailAddress,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSection(
-                        title: 'Thông tin đặt lịch',
-                        icon: Icons.event_rounded,
-                        color: Colors.green,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: _selectDate,
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.shade50,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(
-                                        Icons.calendar_today_rounded,
-                                        color: Colors.green.shade600,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Text(
-                                        _selectedDate != null
-                                            ? 'Ngày: ${_formatDate(_selectedDate!)}'
-                                            : 'Chọn ngày sửa *',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: _selectedDate != null
-                                              ? Colors.blue.shade800
-                                              : Colors.grey.shade500,
-                                        ),
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      size: 16,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                  ],
-                                ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSection(
+                          title: 'Thông tin khách hàng',
+                          icon: Icons.person_rounded,
+                          color: Colors.blue,
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                controller: _nameController,
+                                label: 'Họ tên *',
+                                icon: Icons.person_outline_rounded,
+                                validator: (v) => v?.isEmpty == true
+                                    ? 'Vui lòng nhập họ tên'
+                                    : null,
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            _buildSectionTitle(
-                              'Chọn giờ *',
-                              Icons.access_time_rounded,
-                            ),
-                            const SizedBox(height: 10),
-                            if (_isLoadingSlots)
-                              Center(
-                                child: Padding(
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _phoneController,
+                                label: 'Số điện thoại *',
+                                icon: Icons.phone_rounded,
+                                keyboardType: TextInputType.phone,
+                                validator: (v) => v?.isEmpty == true
+                                    ? 'Vui lòng nhập SĐT'
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _emailController,
+                                label: 'Email (không bắt buộc)',
+                                icon: Icons.email_rounded,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSection(
+                          title: 'Thông tin đặt lịch',
+                          icon: Icons.event_rounded,
+                          color: Colors.green,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                onTap: _selectDate,
+                                child: Container(
                                   padding: const EdgeInsets.all(16),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation(
-                                      Colors.green.shade600,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: Colors.grey.shade200,
                                     ),
                                   ),
-                                ),
-                              )
-                            else if (_selectedDate == null)
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.info_outline_rounded,
-                                      color: Colors.grey.shade500,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Vui lòng chọn ngày trước',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 10,
-                                children: _timeSlots.map((time) {
-                                  final isAvailable = _isSlotAvailable(time);
-                                  final count = _getSlotCount(time);
-                                  final isSelected = _selectedTime == time;
-
-                                  return GestureDetector(
-                                    onTap: isAvailable
-                                        ? () => setState(
-                                            () => _selectedTime = time,
-                                          )
-                                        : null,
-                                    child: AnimatedContainer(
-                                      duration: const Duration(
-                                        milliseconds: 200,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        gradient: isSelected
-                                            ? LinearGradient(
-                                                colors: [
-                                                  Colors.green.shade500,
-                                                  Colors.green.shade700,
-                                                ],
-                                              )
-                                            : null,
-                                        color: !isSelected
-                                            ? (!isAvailable
-                                                  ? Colors.grey.shade200
-                                                  : Colors.white)
-                                            : null,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.green.shade600
-                                              : Colors.grey.shade300,
-                                          width: isSelected ? 2 : 1,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
-                                        boxShadow: isSelected
-                                            ? [
-                                                BoxShadow(
-                                                  color: Colors.green.shade200
-                                                      .withOpacity(0.4),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ]
-                                            : null,
+                                        child: Icon(
+                                          Icons.calendar_today_rounded,
+                                          color: Colors.green.shade600,
+                                          size: 20,
+                                        ),
                                       ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            time,
-                                            style: TextStyle(
-                                              color: isSelected
-                                                  ? Colors.white
-                                                  : !isAvailable
-                                                  ? Colors.grey
-                                                  : Colors.blue.shade800,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Text(
+                                          _selectedDate != null
+                                              ? 'Ngày: ${_formatDate(_selectedDate!)}'
+                                              : 'Chọn ngày sửa *',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: _selectedDate != null
+                                                ? Colors.blue.shade800
+                                                : Colors.grey.shade500,
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            isAvailable ? '($count/3)' : 'Đầy',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: isSelected
-                                                  ? Colors.white70
-                                                  : Colors.grey.shade500,
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
+                                      Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: 16,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            const SizedBox(height: 16),
-                            _buildDropdown(),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSection(
-                        title: 'Dịch vụ cần sửa *',
-                        icon: Icons.build_rounded,
-                        color: Colors.orange,
-                        child: Column(
-                          children: _serviceOptions.map((service) {
-                            final isSelected = _selectedServices.contains(
-                              service,
-                            );
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedServices.remove(service);
-                                  } else {
-                                    _selectedServices.add(service);
-                                  }
-                                });
-                              },
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? Colors.orange.shade50
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.orange.shade400
-                                        : Colors.grey.shade200,
-                                    width: isSelected ? 2 : 1,
+                              const SizedBox(height: 16),
+                              _buildSectionTitle(
+                                'Chọn giờ *',
+                                Icons.access_time_rounded,
+                              ),
+                              const SizedBox(height: 10),
+                              if (_isLoadingSlots)
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Colors.green.shade600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? Colors.orange.shade500
-                                            : Colors.white,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.orange.shade500
-                                              : Colors.grey.shade400,
-                                          width: 2,
+                                )
+                              else if (_selectedDate == null)
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline_rounded,
+                                        color: Colors.grey.shade500,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'Vui lòng chọn ngày trước',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
                                         ),
                                       ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check_rounded,
-                                              size: 16,
-                                              color: Colors.white,
+                                    ],
+                                  ),
+                                )
+                              else
+                                Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: _timeSlots.map((time) {
+                                    final isAvailable = _isSlotAvailable(time);
+                                    final count = _getSlotCount(time);
+                                    final isSelected = _selectedTime == time;
+
+                                    return GestureDetector(
+                                      onTap: isAvailable
+                                          ? () => setState(
+                                              () => _selectedTime = time,
                                             )
                                           : null,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      service,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey.shade800,
+                                      child: AnimatedContainer(
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: isSelected
+                                              ? LinearGradient(
+                                                  colors: [
+                                                    Colors.green.shade500,
+                                                    Colors.green.shade700,
+                                                  ],
+                                                )
+                                              : null,
+                                          color: !isSelected
+                                              ? (!isAvailable
+                                                    ? Colors.grey.shade200
+                                                    : Colors.white)
+                                              : null,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? Colors.green.shade600
+                                                : Colors.grey.shade300,
+                                            width: isSelected ? 2 : 1,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: Colors.green.shade200
+                                                        .withOpacity(0.4),
+                                                    blurRadius: 8,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              time,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : !isAvailable
+                                                    ? Colors.grey
+                                                    : Colors.blue.shade800,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              isAvailable
+                                                  ? '($count/3)'
+                                                  : 'Đầy',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isSelected
+                                                    ? Colors.white70
+                                                    : Colors.grey.shade500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  }).toList(),
                                 ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSection(
-                        title: 'Ghi chú',
-                        icon: Icons.note_rounded,
-                        color: Colors.grey,
-                        child: _buildTextField(
-                          controller: _noteController,
-                          label: 'Ghi chú thêm (nếu có)',
-                          icon: Icons.edit_note_rounded,
-                          maxLines: 3,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildSubmitButton(),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: GestureDetector(
-                          onTap: () => Navigator.pushReplacementNamed(
-                            context,
-                            '/search-appointment',
+                              const SizedBox(height: 16),
+                              _buildDropdown(),
+                            ],
                           ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.search_rounded,
-                                  size: 18,
-                                  color: Colors.blue.shade600,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Tra cứu lịch hẹn đã đặt',
-                                  style: TextStyle(
-                                    color: Colors.blue.shade600,
-                                    fontWeight: FontWeight.w500,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSection(
+                          title: 'Dịch vụ cần sửa *',
+                          icon: Icons.build_rounded,
+                          color: Colors.orange,
+                          child: Column(
+                            children: _serviceOptions.map((service) {
+                              final isSelected = _selectedServices.contains(
+                                service,
+                              );
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedServices.remove(service);
+                                    } else {
+                                      _selectedServices.add(service);
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Colors.orange.shade50
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.orange.shade400
+                                          : Colors.grey.shade200,
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Colors.orange.shade500
+                                              : Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? Colors.orange.shade500
+                                                : Colors.grey.shade400,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(
+                                                Icons.check_rounded,
+                                                size: 16,
+                                                color: Colors.white,
+                                              )
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        service,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade800,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSection(
+                          title: 'Ghi chú',
+                          icon: Icons.note_rounded,
+                          color: Colors.grey,
+                          child: _buildTextField(
+                            controller: _noteController,
+                            label: 'Ghi chú thêm (nếu có)',
+                            icon: Icons.edit_note_rounded,
+                            maxLines: 3,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildSubmitButton(),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pushReplacementNamed(
+                              context,
+                              '/search-appointment',
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.search_rounded,
+                                    size: 18,
+                                    color: Colors.blue.shade600,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Tra cứu lịch hẹn đã đặt',
+                                    style: TextStyle(
+                                      color: Colors.blue.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 32),
-                    ],
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -589,12 +599,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

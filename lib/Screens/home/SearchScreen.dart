@@ -106,31 +106,33 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _isSearching
+                    ? _buildSearchResults()
+                    : _buildSuggestions(),
+              ),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : _isSearching
-                  ? _buildSearchResults()
-                  : _buildSuggestions(),
-            ),
-          ],
         ),
       ),
     );
@@ -138,12 +140,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -471,18 +468,18 @@ class _PopularPartItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 70,
+              height: 70,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: part.image.isNotEmpty
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       child: Image.network(
                         Utils.getBackendImgURL(part.image),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.build_rounded,
                           color: Colors.grey.shade400,
@@ -702,10 +699,10 @@ class _SearchResultItemState extends State<_SearchResultItem>
           child: Row(
             children: [
               Container(
-                width: 60,
-                height: 60,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: widget.part.image.isNotEmpty
@@ -713,7 +710,7 @@ class _SearchResultItemState extends State<_SearchResultItem>
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
                           Utils.getBackendImgURL(widget.part.image),
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) => Icon(
                             Icons.build_rounded,
                             color: Colors.grey.shade400,

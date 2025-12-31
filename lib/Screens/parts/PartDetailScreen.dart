@@ -163,13 +163,15 @@ class _PartDetailScreenState extends State<PartDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: _isLoading
-          ? _buildLoadingState()
-          : _part == null
-          ? _buildEmptyState()
-          : _buildContent(),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: _isLoading
+            ? _buildLoadingState()
+            : _part == null
+            ? _buildEmptyState()
+            : _buildContent(),
+      ),
     );
   }
 

@@ -229,51 +229,53 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _filteredOrders.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: _fetchOrders,
+                        color: Colors.blue.shade600,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                          itemCount: _filteredOrders.length,
+                          itemBuilder: (context, index) {
+                            final order = _filteredOrders[index];
+                            return _OrderCard(
+                              order: order,
+                              index: index,
+                              formatPrice: _formatPrice,
+                              formatDate: _formatDate,
+                              getStatusColor: _getStatusColor,
+                              getStatusText: _getStatusText,
+                              getStatusIcon: _getStatusIcon,
+                              onTap: () => _showOrderDetail(order),
+                            );
+                          },
+                        ),
+                      ),
+              ),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : _filteredOrders.isEmpty
-                  ? _buildEmptyState()
-                  : RefreshIndicator(
-                      onRefresh: _fetchOrders,
-                      color: Colors.blue.shade600,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        itemCount: _filteredOrders.length,
-                        itemBuilder: (context, index) {
-                          final order = _filteredOrders[index];
-                          return _OrderCard(
-                            order: order,
-                            index: index,
-                            formatPrice: _formatPrice,
-                            formatDate: _formatDate,
-                            getStatusColor: _getStatusColor,
-                            getStatusText: _getStatusText,
-                            getStatusIcon: _getStatusIcon,
-                            onTap: () => _showOrderDetail(order),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ],
         ),
       ),
     );
@@ -281,12 +283,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

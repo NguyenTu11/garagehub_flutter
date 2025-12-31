@@ -119,111 +119,113 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50.withOpacity(0.6),
-              Colors.white,
-              Colors.grey.shade50,
-            ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.blue.shade50.withOpacity(0.6),
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildOrderSummary(),
-                      const SizedBox(height: 20),
-                      _buildSectionTitle(
-                        'Thông tin giao hàng',
-                        Icons.location_on_rounded,
-                      ),
-                      const SizedBox(height: 14),
-                      _buildTextField(
-                        controller: _nameController,
-                        label: 'Họ tên',
-                        icon: Icons.person_rounded,
-                        validator: (value) => value?.isEmpty == true
-                            ? 'Vui lòng nhập họ tên'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _phoneController,
-                        label: 'Số điện thoại',
-                        icon: Icons.phone_rounded,
-                        keyboardType: TextInputType.phone,
-                        validator: (value) => value?.isEmpty == true
-                            ? 'Vui lòng nhập số điện thoại'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _addressController,
-                        label: 'Địa chỉ giao hàng',
-                        icon: Icons.home_rounded,
-                        validator: (value) => value?.isEmpty == true
-                            ? 'Vui lòng nhập địa chỉ'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _cityController,
-                        label: 'Thành phố',
-                        icon: Icons.location_city_rounded,
-                        validator: (value) => value?.isEmpty == true
-                            ? 'Vui lòng nhập thành phố'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _emailController,
-                        label: 'Email liên hệ',
-                        icon: Icons.email_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value?.isEmpty == true)
-                            return 'Vui lòng nhập email';
-                          if (!value!.contains('@'))
-                            return 'Email không hợp lệ';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _noteController,
-                        label: 'Ghi chú (tùy chọn)',
-                        icon: Icons.note_rounded,
-                        maxLines: 2,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildSectionTitle(
-                        'Phương thức thanh toán',
-                        Icons.payment_rounded,
-                      ),
-                      const SizedBox(height: 14),
-                      _buildPaymentMethod(),
-                      const SizedBox(height: 30),
-                      _buildSubmitButton(),
-                      const SizedBox(height: 20),
-                    ],
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildOrderSummary(),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle(
+                          'Thông tin giao hàng',
+                          Icons.location_on_rounded,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: _nameController,
+                          label: 'Họ tên',
+                          icon: Icons.person_rounded,
+                          validator: (value) => value?.isEmpty == true
+                              ? 'Vui lòng nhập họ tên'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _phoneController,
+                          label: 'Số điện thoại',
+                          icon: Icons.phone_rounded,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) => value?.isEmpty == true
+                              ? 'Vui lòng nhập số điện thoại'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _addressController,
+                          label: 'Địa chỉ giao hàng',
+                          icon: Icons.home_rounded,
+                          validator: (value) => value?.isEmpty == true
+                              ? 'Vui lòng nhập địa chỉ'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _cityController,
+                          label: 'Thành phố',
+                          icon: Icons.location_city_rounded,
+                          validator: (value) => value?.isEmpty == true
+                              ? 'Vui lòng nhập thành phố'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _emailController,
+                          label: 'Email liên hệ',
+                          icon: Icons.email_rounded,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value?.isEmpty == true)
+                              return 'Vui lòng nhập email';
+                            if (!value!.contains('@'))
+                              return 'Email không hợp lệ';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTextField(
+                          controller: _noteController,
+                          label: 'Ghi chú (tùy chọn)',
+                          icon: Icons.note_rounded,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle(
+                          'Phương thức thanh toán',
+                          Icons.payment_rounded,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildPaymentMethod(),
+                        const SizedBox(height: 30),
+                        _buildSubmitButton(),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -231,12 +233,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 16,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
