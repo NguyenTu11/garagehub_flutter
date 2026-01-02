@@ -398,11 +398,14 @@ class _AdminChatTabState extends State<_AdminChatTab> {
 
   Future<void> _pickImages() async {
     try {
-      // Request photo library permission
+      // Request photo library permission based on Android version
       PermissionStatus status;
       if (Platform.isAndroid) {
+        // On Android 13+ (API 33+), use Permission.photos for READ_MEDIA_IMAGES
+        // On older versions, use Permission.storage
         status = await Permission.photos.request();
-        if (status.isDenied) {
+        if (status.isDenied || status.isRestricted) {
+          // Fallback to storage permission for older Android versions
           status = await Permission.storage.request();
         }
       } else {
@@ -411,41 +414,35 @@ class _AdminChatTabState extends State<_AdminChatTab> {
 
       if (status.isPermanentlyDenied) {
         if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Cần quyền truy cập'),
-              content: const Text(
-                'Vui lòng cấp quyền truy cập thư viện ảnh trong cài đặt để chọn ảnh.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Hủy'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    openAppSettings();
-                  },
-                  child: const Text('Mở cài đặt'),
-                ),
-              ],
+          _showPermissionDeniedDialog();
+        }
+        return;
+      }
+
+      if (!status.isGranted && !status.isLimited) {
+        // Permission was denied but not permanently - user might have just dismissed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Vui lòng cấp quyền để chọn ảnh'),
+              backgroundColor: Colors.orange.shade400,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
         return;
       }
 
-      if (!status.isGranted && !status.isLimited) {
-        return;
-      }
+      // Add a small delay after permission is granted to ensure system registers it
+      // This fixes the issue where photos don't appear immediately after granting permission
+      await Future.delayed(const Duration(milliseconds: 300));
 
       final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 80,
       );
+
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _selectedImages.addAll(pickedFiles.map((f) => f.path));
@@ -463,7 +460,40 @@ class _AdminChatTabState extends State<_AdminChatTab> {
       }
     } catch (e) {
       debugPrint('Error picking images: $e');
+      // If there's a permission error, show dialog to open settings
+      if (e.toString().contains('permission') ||
+          e.toString().contains('denied') ||
+          e.toString().contains('access')) {
+        if (mounted) {
+          _showPermissionDeniedDialog();
+        }
+      }
     }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cần quyền truy cập'),
+        content: const Text(
+          'Vui lòng cấp quyền truy cập thư viện ảnh trong cài đặt để chọn ảnh.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Mở cài đặt'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _removeImage(int index) {
