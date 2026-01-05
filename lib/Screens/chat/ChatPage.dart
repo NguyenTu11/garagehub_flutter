@@ -398,14 +398,10 @@ class _AdminChatTabState extends State<_AdminChatTab> {
 
   Future<void> _pickImages() async {
     try {
-      // Request photo library permission based on Android version
       PermissionStatus status;
       if (Platform.isAndroid) {
-        // On Android 13+ (API 33+), use Permission.photos for READ_MEDIA_IMAGES
-        // On older versions, use Permission.storage
         status = await Permission.photos.request();
         if (status.isDenied || status.isRestricted) {
-          // Fallback to storage permission for older Android versions
           status = await Permission.storage.request();
         }
       } else {
@@ -420,7 +416,6 @@ class _AdminChatTabState extends State<_AdminChatTab> {
       }
 
       if (!status.isGranted && !status.isLimited) {
-        // Permission was denied but not permanently - user might have just dismissed
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -432,9 +427,6 @@ class _AdminChatTabState extends State<_AdminChatTab> {
         }
         return;
       }
-
-      // Add a small delay after permission is granted to ensure system registers it
-      // This fixes the issue where photos don't appear immediately after granting permission
       await Future.delayed(const Duration(milliseconds: 300));
 
       final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
@@ -460,7 +452,6 @@ class _AdminChatTabState extends State<_AdminChatTab> {
       }
     } catch (e) {
       debugPrint('Error picking images: $e');
-      // If there's a permission error, show dialog to open settings
       if (e.toString().contains('permission') ||
           e.toString().contains('denied') ||
           e.toString().contains('access')) {
