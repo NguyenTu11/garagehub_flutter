@@ -11,8 +11,10 @@ import 'PartDetailScreen.dart';
 
 class PartsScreen extends StatefulWidget {
   final String? initialSearchTerm;
+  final String? initialBrandId;
 
-  const PartsScreen({Key? key, this.initialSearchTerm}) : super(key: key);
+  const PartsScreen({Key? key, this.initialSearchTerm, this.initialBrandId})
+    : super(key: key);
 
   @override
   State<PartsScreen> createState() => _PartsScreenState();
@@ -87,10 +89,14 @@ class _PartsScreenState extends State<PartsScreen> {
       if (brandsResponse.status) {
         setState(() {
           _brands = brandsResponse.data;
+          if (widget.initialBrandId != null &&
+              widget.initialBrandId!.isNotEmpty) {
+            _selectedBrandId = widget.initialBrandId;
+          }
         });
       }
 
-      if (_searchTerm.isNotEmpty) {
+      if (_searchTerm.isNotEmpty || _selectedBrandId != null) {
         _applyFilters();
       }
     } catch (e) {
@@ -429,6 +435,12 @@ class _PartsScreenState extends State<PartsScreen> {
   }
 
   Widget _buildBrandDropdown() {
+    final validBrandIds = _brands.map((b) => b.id).toSet();
+    final dropdownValue =
+        (_selectedBrandId != null && validBrandIds.contains(_selectedBrandId))
+        ? _selectedBrandId
+        : null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -445,7 +457,7 @@ class _PartsScreenState extends State<PartsScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: _selectedBrandId,
+          value: dropdownValue,
           hint: Text(
             'Tất cả hãng',
             style: TextStyle(
@@ -461,7 +473,7 @@ class _PartsScreenState extends State<PartsScreen> {
           ),
           items: [
             DropdownMenuItem<String>(
-              value: '',
+              value: null,
               child: Text(
                 'Tất cả hãng',
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
@@ -478,7 +490,7 @@ class _PartsScreenState extends State<PartsScreen> {
             ),
           ],
           onChanged: (value) {
-            _onBrandFilter(value == '' ? null : value);
+            _onBrandFilter(value);
           },
         ),
       ),

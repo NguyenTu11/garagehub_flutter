@@ -366,7 +366,8 @@ class _FeaturedProductsState extends State<FeaturedProducts> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PartsScreen(),
+                          builder: (context) =>
+                              PartsScreen(initialBrandId: brand.id),
                         ),
                       );
                     },
