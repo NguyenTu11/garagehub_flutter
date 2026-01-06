@@ -82,7 +82,9 @@ class _ChangePasswordScreen extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double logoSize = 140;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final double logoSize = isLandscape ? 80 : 140;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -176,7 +178,7 @@ class _ChangePasswordScreen extends State<ChangePasswordScreen> {
                   top: 0,
                   left: 20,
                   right: 20,
-                  bottom: 16,
+                  bottom: isLandscape ? 8 : 16,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -195,19 +197,21 @@ class _ChangePasswordScreen extends State<ChangePasswordScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: isLandscape ? 8 : 12),
                     Container(
                       constraints: BoxConstraints(maxWidth: 400),
                       child: Card(
                         elevation: 10,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 20 : 28,
+                          ),
                         ),
                         color: Colors.white,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 32,
+                            horizontal: isLandscape ? 20 : 24,
+                            vertical: isLandscape ? 20 : 32,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,

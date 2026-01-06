@@ -126,7 +126,9 @@ class _VerifyCodeScreen extends State<VerifyCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double logoSize = 140;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final double logoSize = isLandscape ? 70 : 140;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -134,7 +136,10 @@ class _VerifyCodeScreen extends State<VerifyCodeScreen> {
           children: [
             Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: isLandscape ? 8 : 0,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,7 +158,7 @@ class _VerifyCodeScreen extends State<VerifyCodeScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: isLandscape ? 4 : 8),
                     Container(
                       constraints: BoxConstraints(maxWidth: 400),
                       alignment: Alignment.center,

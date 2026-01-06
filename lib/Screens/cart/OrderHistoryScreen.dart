@@ -282,8 +282,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   Widget _buildHeader() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        isLandscape ? 10 : 16,
+        20,
+        isLandscape ? 10 : 20,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -301,49 +309,82 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               GestureDetector(
                 onTap: () => Navigator.pushReplacementNamed(context, '/home'),
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(isLandscape ? 8 : 10),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(isLandscape ? 10 : 12),
                   ),
                   child: Icon(
                     Icons.arrow_back_rounded,
                     color: Colors.blue.shade700,
-                    size: 22,
+                    size: isLandscape ? 18 : 22,
                   ),
                 ),
               ),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Lịch sử đơn hàng',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade800,
-                        letterSpacing: 0.5,
+                child: isLandscape
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Lịch sử đơn hàng',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${_filteredOrders.length} đơn hàng',
+                              style: TextStyle(
+                                color: Colors.blue.shade600,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Lịch sử đơn hàng',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${_filteredOrders.length} đơn hàng',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${_filteredOrders.length} đơn hàng',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(width: 46),
             ],
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: isLandscape ? 10 : 18),
           SizedBox(
-            height: 38,
+            height: isLandscape ? 32 : 38,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _statusFilters.length,
@@ -359,7 +400,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isLandscape ? 10 : 14,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.blue.shade600 : Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -382,7 +425,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       children: [
                         Icon(
                           filter['icon'],
-                          size: 16,
+                          size: isLandscape ? 14 : 16,
                           color: isSelected
                               ? Colors.white
                               : Colors.grey.shade600,
@@ -391,7 +434,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         Text(
                           filter['label'],
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: isLandscape ? 11 : 13,
                             fontWeight: FontWeight.w500,
                             color: isSelected
                                 ? Colors.white

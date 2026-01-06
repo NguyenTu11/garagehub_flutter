@@ -68,7 +68,9 @@ class _ForgotPasswordScreen extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double logoSize = 140;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final double logoSize = isLandscape ? 80 : 140;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -76,7 +78,10 @@ class _ForgotPasswordScreen extends State<ForgotPasswordScreen> {
           children: [
             Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: isLandscape ? 8 : 16,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,13 +105,15 @@ class _ForgotPasswordScreen extends State<ForgotPasswordScreen> {
                       child: Card(
                         elevation: 10,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 20 : 28,
+                          ),
                         ),
                         color: Colors.white,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 32,
+                            horizontal: isLandscape ? 20 : 24,
+                            vertical: isLandscape ? 20 : 32,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,

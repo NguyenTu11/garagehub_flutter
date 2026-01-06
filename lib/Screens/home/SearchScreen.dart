@@ -139,8 +139,16 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildHeader() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        isLandscape ? 10 : 16,
+        20,
+        isLandscape ? 10 : 20,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -152,30 +160,32 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(isLandscape ? 8 : 10),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(isLandscape ? 10 : 12),
                   ),
                   child: Icon(
                     Icons.arrow_back_rounded,
                     color: Colors.blue.shade700,
-                    size: 22,
+                    size: isLandscape ? 18 : 22,
                   ),
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Container(
+                  height: isLandscape ? 40 : null,
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(isLandscape ? 12 : 16),
                     border: Border.all(color: Colors.blue.shade100, width: 1),
                   ),
                   child: TextField(
@@ -187,25 +197,29 @@ class _SearchScreenState extends State<SearchScreen> {
                         _searchWithTerm(value);
                       }
                     },
-                    style: TextStyle(fontSize: 15, color: Colors.blue.shade800),
+                    style: TextStyle(
+                      fontSize: isLandscape ? 14 : 15,
+                      color: Colors.blue.shade800,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Tìm kiếm phụ tùng...',
                       hintStyle: TextStyle(
                         color: Colors.blueGrey.shade300,
                         fontWeight: FontWeight.w400,
+                        fontSize: isLandscape ? 13 : 14,
                       ),
                       border: InputBorder.none,
                       prefixIcon: Icon(
                         Icons.search_rounded,
                         color: Colors.blue.shade400,
-                        size: 22,
+                        size: isLandscape ? 18 : 22,
                       ),
                       suffixIcon: _controller.text.isNotEmpty
                           ? IconButton(
                               icon: Icon(
                                 Icons.close_rounded,
                                 color: Colors.blue.shade400,
-                                size: 20,
+                                size: isLandscape ? 16 : 20,
                               ),
                               onPressed: () {
                                 _controller.clear();
@@ -213,8 +227,8 @@ class _SearchScreenState extends State<SearchScreen> {
                               },
                             )
                           : null,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 14,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: isLandscape ? 10 : 14,
                         horizontal: 16,
                       ),
                     ),

@@ -213,8 +213,16 @@ class _SearchAppointmentScreenState extends State<SearchAppointmentScreen> {
   }
 
   Widget _buildHeader() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        isLandscape ? 10 : 16,
+        20,
+        isLandscape ? 10 : 20,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -225,55 +233,168 @@ class _SearchAppointmentScreenState extends State<SearchAppointmentScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pushReplacementNamed(context, '/home'),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.blue.shade700,
-                size: 22,
-              ),
+      child: isLandscape ? _buildLandscapeHeader() : _buildPortraitHeader(),
+    );
+  }
+
+  Widget _buildPortraitHeader() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pushReplacementNamed(context, '/home'),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.blue.shade700,
+              size: 22,
             ),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Tra cứu lịch hẹn',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade800,
-                    letterSpacing: 0.5,
-                  ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Tra cứu lịch hẹn',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade800,
+                  letterSpacing: 0.5,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${_appointments.length} lịch hẹn',
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${_appointments.length} lịch hẹn',
+                style: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 46),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeHeader() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pushReplacementNamed(context, '/home'),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.blue.shade700,
+              size: 18,
             ),
           ),
-          const SizedBox(width: 46),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Tra cứu lịch hẹn',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue.shade800,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '${_appointments.length} lịch hẹn',
+            style: TextStyle(
+              color: Colors.blue.shade600,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              style: TextStyle(color: Colors.blue.shade800, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Số điện thoại...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                prefixIcon: Icon(
+                  Icons.phone_rounded,
+                  color: Colors.blue.shade400,
+                  size: 18,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+              onSubmitted: (_) => _search(),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: _isLoading ? null : _search,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade600, Colors.blue.shade800],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: _isLoading
+                ? SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: const AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : const Icon(
+                    Icons.search_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildSearchBox() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    if (isLandscape) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

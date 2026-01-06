@@ -101,8 +101,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Widget _buildHeader() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        isLandscape ? 8 : 16,
+        20,
+        isLandscape ? 8 : 20,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -118,82 +126,125 @@ class _AIChatScreenState extends State<AIChatScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(isLandscape ? 8 : 10),
               decoration: BoxDecoration(
                 color: Colors.purple.shade50,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(isLandscape ? 10 : 12),
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
                 color: Colors.purple.shade700,
-                size: 22,
+                size: isLandscape ? 18 : 22,
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: isLandscape ? 10 : 14),
           Container(
-            width: 46,
-            height: 46,
+            width: isLandscape ? 36 : 46,
+            height: isLandscape ? 36 : 46,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.purple.shade400, Colors.purple.shade700],
               ),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(isLandscape ? 10 : 14),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.smart_toy_rounded,
               color: Colors.white,
-              size: 24,
+              size: isLandscape ? 18 : 24,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: isLandscape ? 10 : 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'GarageHub AI',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple.shade800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
+            child: isLandscape
+                ? Row(
+                    children: [
+                      Text(
+                        'GarageHub AI',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple.shade800,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 12,
-                            color: Colors.purple.shade600,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Trợ lý thông minh',
-                            style: TextStyle(
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 10,
                               color: Colors.purple.shade600,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'AI',
+                              style: TextStyle(
+                                color: Colors.purple.shade600,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GarageHub AI',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple.shade800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 12,
+                                  color: Colors.purple.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Trợ lý thông minh',
+                                  style: TextStyle(
+                                    color: Colors.purple.shade600,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -201,90 +252,181 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.purple.shade400, Colors.purple.shade700],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.purple.shade200.withOpacity(0.5),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+        padding: EdgeInsets.all(isLandscape ? 16 : 32),
+        child: isLandscape
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.purple.shade400,
+                          Colors.purple.shade700,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purple.shade200.withOpacity(0.5),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.smart_toy_rounded,
+                      size: 30,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Xin chào! 👋',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tôi là trợ lý AI của GarageHub. Hãy hỏi tôi về phụ tùng, xe máy!',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _SuggestionChip(
+                        text: 'Xe máy',
+                        icon: Icons.two_wheeler_rounded,
+                        onTap: () {
+                          _messageController.text =
+                              'Xe máy nào tốt nhất hiện nay?';
+                          _sendMessage();
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      _SuggestionChip(
+                        text: 'Phụ tùng',
+                        icon: Icons.verified_rounded,
+                        onTap: () {
+                          _messageController.text =
+                              'Làm sao nhận biết phụ tùng chính hãng?';
+                          _sendMessage();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.purple.shade400,
+                          Colors.purple.shade700,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purple.shade200.withOpacity(0.5),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.smart_toy_rounded,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Xin chào! 👋',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Tôi là trợ lý AI của GarageHub.\nHãy hỏi tôi về phụ tùng, xe máy,\nhoặc bất kỳ điều gì bạn cần!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _SuggestionChip(
+                        text: 'Xe máy nào tốt nhất?',
+                        icon: Icons.two_wheeler_rounded,
+                        onTap: () {
+                          _messageController.text =
+                              'Xe máy nào tốt nhất hiện nay?';
+                          _sendMessage();
+                        },
+                      ),
+                      _SuggestionChip(
+                        text: 'Phụ tùng chính hãng',
+                        icon: Icons.verified_rounded,
+                        onTap: () {
+                          _messageController.text =
+                              'Làm sao nhận biết phụ tùng chính hãng?';
+                          _sendMessage();
+                        },
+                      ),
+                      _SuggestionChip(
+                        text: 'Bảo dưỡng xe',
+                        icon: Icons.build_rounded,
+                        onTap: () {
+                          _messageController.text =
+                              'Khi nào cần bảo dưỡng xe máy?';
+                          _sendMessage();
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.smart_toy_rounded,
-                size: 50,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Xin chào! 👋',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple.shade800,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Tôi là trợ lý AI của GarageHub.\nHãy hỏi tôi về phụ tùng, xe máy,\nhoặc bất kỳ điều gì bạn cần!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              alignment: WrapAlignment.center,
-              children: [
-                _SuggestionChip(
-                  text: 'Xe máy nào tốt nhất?',
-                  icon: Icons.two_wheeler_rounded,
-                  onTap: () {
-                    _messageController.text = 'Xe máy nào tốt nhất hiện nay?';
-                    _sendMessage();
-                  },
-                ),
-                _SuggestionChip(
-                  text: 'Phụ tùng chính hãng',
-                  icon: Icons.verified_rounded,
-                  onTap: () {
-                    _messageController.text =
-                        'Làm sao nhận biết phụ tùng chính hãng?';
-                    _sendMessage();
-                  },
-                ),
-                _SuggestionChip(
-                  text: 'Bảo dưỡng xe',
-                  icon: Icons.build_rounded,
-                  onTap: () {
-                    _messageController.text = 'Khi nào cần bảo dưỡng xe máy?';
-                    _sendMessage();
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -338,12 +480,15 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Widget _buildInputArea() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
-        12,
+        isLandscape ? 8 : 12,
         16,
-        MediaQuery.of(context).padding.bottom + 12,
+        MediaQuery.of(context).padding.bottom + (isLandscape ? 8 : 12),
       ),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -361,34 +506,40 @@ class _AIChatScreenState extends State<AIChatScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(isLandscape ? 18 : 24),
               ),
               child: TextField(
                 controller: _messageController,
-                style: TextStyle(color: Colors.purple.shade800),
+                style: TextStyle(
+                  color: Colors.purple.shade800,
+                  fontSize: isLandscape ? 14 : 16,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Hỏi điều gì đó...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: isLandscape ? 14 : 16,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isLandscape ? 16 : 20,
+                    vertical: isLandscape ? 10 : 14,
                   ),
                 ),
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isLandscape ? 8 : 12),
           GestureDetector(
             onTap: _isLoading ? null : _sendMessage,
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(isLandscape ? 10 : 14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.purple.shade500, Colors.purple.shade700],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(isLandscape ? 12 : 16),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.purple.shade200.withOpacity(0.4),
@@ -399,17 +550,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
               ),
               child: _isLoading
                   ? SizedBox(
-                      width: 22,
-                      height: 22,
+                      width: isLandscape ? 18 : 22,
+                      height: isLandscape ? 18 : 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: const AlwaysStoppedAnimation(Colors.white),
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.send_rounded,
                       color: Colors.white,
-                      size: 22,
+                      size: isLandscape ? 18 : 22,
                     ),
             ),
           ),

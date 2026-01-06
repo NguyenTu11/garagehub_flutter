@@ -327,26 +327,49 @@ class _FeaturedProductsState extends State<FeaturedProducts> {
             ],
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.9,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: _brands.length,
-            itemBuilder: (context, index) {
-              final brand = _brands[index];
-              return _BrandCard(
-                brand: brand,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PartsScreen(),
-                    ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isLandscape =
+                  MediaQuery.of(context).orientation == Orientation.landscape;
+              final screenWidth = constraints.maxWidth;
+              int crossAxisCount;
+              double childAspectRatio;
+
+              if (isLandscape) {
+                if (screenWidth >= 700) {
+                  crossAxisCount = 6;
+                  childAspectRatio = 0.95;
+                } else {
+                  crossAxisCount = 4;
+                  childAspectRatio = 0.90;
+                }
+              } else {
+                crossAxisCount = 3;
+                childAspectRatio = 0.9;
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: childAspectRatio,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemCount: _brands.length,
+                itemBuilder: (context, index) {
+                  final brand = _brands[index];
+                  return _BrandCard(
+                    brand: brand,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PartsScreen(),
+                        ),
+                      );
+                    },
                   );
                 },
               );

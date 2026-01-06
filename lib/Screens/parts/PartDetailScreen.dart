@@ -231,17 +231,22 @@ class _PartDetailScreenState extends State<PartDetailScreen>
   }
 
   Widget _buildContent() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final appBarHeight = isLandscape ? 160.0 : 260.0;
+    final imageSize = isLandscape ? 120.0 : 200.0;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 260,
+            expandedHeight: appBarHeight,
             pinned: true,
             backgroundColor: Colors.white,
             elevation: 0,
             leading: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(isLandscape ? 6.0 : 8.0),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
@@ -258,6 +263,7 @@ class _PartDetailScreenState extends State<PartDetailScreen>
                   icon: Icon(
                     Icons.arrow_back_rounded,
                     color: Colors.blue.shade800,
+                    size: isLandscape ? 20 : 24,
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -278,13 +284,15 @@ class _PartDetailScreenState extends State<PartDetailScreen>
                 child: SafeArea(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 40),
+                      padding: EdgeInsets.only(top: isLandscape ? 20 : 40),
                       child: Container(
-                        width: 200,
-                        height: 200,
+                        width: imageSize,
+                        height: imageSize,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 18 : 24,
+                          ),
                           border: Border.all(color: Colors.grey.shade200),
                           boxShadow: [
                             BoxShadow(
@@ -295,7 +303,9 @@ class _PartDetailScreenState extends State<PartDetailScreen>
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(23),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 17 : 23,
+                          ),
                           child: _part!.image.isNotEmpty
                               ? Image.network(
                                   Utils.getBackendImgURL(_part!.image),

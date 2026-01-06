@@ -119,7 +119,9 @@ class _SignupScreen extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double logoSize = 140;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final double logoSize = isLandscape ? 80 : 140;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -127,7 +129,10 @@ class _SignupScreen extends State<SignupScreen> {
           children: [
             Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: isLandscape ? 8 : 16,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -145,19 +150,21 @@ class _SignupScreen extends State<SignupScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: isLandscape ? 8 : 12),
                     Container(
                       constraints: BoxConstraints(maxWidth: 400),
                       child: Card(
                         elevation: 10,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 20 : 28,
+                          ),
                         ),
                         color: Colors.white,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 32,
+                            horizontal: isLandscape ? 20 : 24,
+                            vertical: isLandscape ? 20 : 32,
                           ),
                           child: step == 1
                               ? Column(

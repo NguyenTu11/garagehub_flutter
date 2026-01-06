@@ -150,17 +150,22 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
   }
 
   Widget _buildContent() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final appBarHeight = isLandscape ? 180.0 : 260.0;
+    final imageSize = isLandscape ? 70.0 : 110.0;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 260,
+            expandedHeight: appBarHeight,
             pinned: true,
             backgroundColor: Colors.white,
             elevation: 0,
             leading: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(isLandscape ? 6.0 : 8.0),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
@@ -177,6 +182,7 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
                   icon: Icon(
                     Icons.arrow_back_rounded,
                     color: Colors.blue.shade800,
+                    size: isLandscape ? 20 : 24,
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -198,13 +204,15 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 40),
+                      SizedBox(height: isLandscape ? 20 : 40),
                       Container(
-                        width: 110,
-                        height: 110,
+                        width: imageSize,
+                        height: imageSize,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 16 : 24,
+                          ),
                           border: Border.all(color: Colors.grey.shade200),
                           boxShadow: [
                             BoxShadow(
@@ -215,7 +223,9 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(23),
+                          borderRadius: BorderRadius.circular(
+                            isLandscape ? 15 : 23,
+                          ),
                           child: _brand!.image.isNotEmpty
                               ? Image.network(
                                   Utils.getBackendImgURL(_brand!.image),
@@ -227,22 +237,22 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
                               : _buildBrandPlaceholder(),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: isLandscape ? 10 : 16),
                       Text(
                         _brand!.name,
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: isLandscape ? 20 : 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue.shade800,
                           letterSpacing: 0.3,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: isLandscape ? 6 : 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isLandscape ? 12 : 16,
+                          vertical: isLandscape ? 6 : 8,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.blue.shade50,
@@ -253,14 +263,14 @@ class _BrandDetailScreenState extends State<BrandDetailScreen>
                           children: [
                             Icon(
                               Icons.build_rounded,
-                              size: 16,
+                              size: isLandscape ? 14 : 16,
                               color: Colors.blue.shade600,
                             ),
                             const SizedBox(width: 6),
                             Text(
                               '${_parts.length} phụ tùng',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: isLandscape ? 11 : 13,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.blue.shade600,
                               ),

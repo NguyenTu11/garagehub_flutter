@@ -75,6 +75,217 @@ class _BrandsScreenState extends State<BrandsScreen>
     });
   }
 
+  Widget _buildHeader() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        isLandscape ? 12 : 24,
+        20,
+        isLandscape ? 12 : 20,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: isLandscape ? _buildLandscapeHeader() : _buildPortraitHeader(),
+    );
+  }
+
+  Widget _buildPortraitHeader() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade600, Colors.blue.shade800],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.shade300.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.storefront_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Thương hiệu',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${_filteredBrands.length} thương hiệu',
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.blue.shade100, width: 1),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _onSearch,
+            style: TextStyle(fontSize: 15, color: Colors.blue.shade800),
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm thương hiệu...',
+              hintStyle: TextStyle(
+                color: Colors.blueGrey.shade300,
+                fontWeight: FontWeight.w400,
+              ),
+              border: InputBorder.none,
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: Colors.blue.shade400,
+                size: 22,
+              ),
+              suffixIcon: _searchTerm.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: Colors.blue.shade400,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearch('');
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade600, Colors.blue.shade800],
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.storefront_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Thương hiệu',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade800,
+              ),
+            ),
+            Text(
+              '${_filteredBrands.length} thương hiệu',
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+            ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade100, width: 1),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearch,
+              style: TextStyle(fontSize: 14, color: Colors.blue.shade800),
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm...',
+                hintStyle: TextStyle(
+                  color: Colors.blueGrey.shade300,
+                  fontSize: 13,
+                ),
+                border: InputBorder.none,
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: Colors.blue.shade400,
+                  size: 18,
+                ),
+                suffixIcon: _searchTerm.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: Colors.blue.shade400,
+                          size: 16,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearch('');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -94,122 +305,7 @@ class _BrandsScreenState extends State<BrandsScreen>
         ),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.blue.shade600,
-                              Colors.blue.shade800,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.shade300.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.storefront_rounded,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Thương hiệu',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${_filteredBrands.length} thương hiệu',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.blue.shade100, width: 1),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: _onSearch,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.blue.shade800,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Tìm kiếm thương hiệu...',
-                        hintStyle: TextStyle(
-                          color: Colors.blueGrey.shade300,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        border: InputBorder.none,
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color: Colors.blue.shade400,
-                          size: 22,
-                        ),
-                        suffixIcon: _searchTerm.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  Icons.close_rounded,
-                                  color: Colors.blue.shade400,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _onSearch('');
-                                },
-                              )
-                            : null,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(),
             Expanded(
               child: _isLoading
                   ? const ShimmerBrandGrid()
@@ -253,28 +349,60 @@ class _BrandsScreenState extends State<BrandsScreen>
                   : RefreshIndicator(
                       onRefresh: _fetchBrands,
                       color: Colors.blue.shade600,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.85,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
-                            ),
-                        itemCount: _filteredBrands.length,
-                        itemBuilder: (context, index) {
-                          final brand = _filteredBrands[index];
-                          return _BrandCard(
-                            brand: brand,
-                            index: index,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      BrandDetailScreen(brandId: brand.id!),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final screenWidth = constraints.maxWidth;
+                          final isLandscape =
+                              MediaQuery.of(context).orientation ==
+                              Orientation.landscape;
+                          int crossAxisCount;
+                          double childAspectRatio;
+
+                          if (isLandscape) {
+                            if (screenWidth >= 900) {
+                              crossAxisCount = 5;
+                              childAspectRatio = 0.90;
+                            } else if (screenWidth >= 700) {
+                              crossAxisCount = 4;
+                              childAspectRatio = 0.88;
+                            } else {
+                              crossAxisCount = 3;
+                              childAspectRatio = 0.85;
+                            }
+                          } else {
+                            if (screenWidth >= 600) {
+                              crossAxisCount = 3;
+                              childAspectRatio = 0.85;
+                            } else {
+                              crossAxisCount = 2;
+                              childAspectRatio = 0.85;
+                            }
+                          }
+
+                          return GridView.builder(
+                            padding: const EdgeInsets.all(16),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  childAspectRatio: childAspectRatio,
+                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 14,
                                 ),
+                            itemCount: _filteredBrands.length,
+                            itemBuilder: (context, index) {
+                              final brand = _filteredBrands[index];
+                              return _BrandCard(
+                                brand: brand,
+                                index: index,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          BrandDetailScreen(brandId: brand.id!),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           );
